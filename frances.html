@@ -1,0 +1,1580 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0D6B5B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D6B5B'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='700' font-size='26' text-anchor='middle' fill='white'%3EFR%3C/text%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head><body>
+<title>Francês TEF e TCF</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: caderno de estudo — coluna única centrada (máx. 760px), barra de abas fixa embaixo, exercícios em tela cheia. */
+:root{
+  --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#E9EDF6; --ink:#121826; --muted:#59627A; --line:#D8DEEA;
+  --ok:#17804F; --ok-bg:#E2F4EA; --bad:#C2352B; --bad-bg:#FBE7E5; --warn:#9A6400; --warn-bg:#FFF3D6;
+  --brand:#0D6B5B; --brand-ink:#FFFFFF; --mark:#FFC2D6;
+  --f-display:"Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r:14px; --r-sm:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D111A; --surface:#151B27; --surface-2:#1E2636; --ink:#E7EBF3; --muted:#9AA3B7; --line:#2A3345;
+  --ok:#4CC38A; --ok-bg:#11261B; --bad:#FF7B70; --bad-bg:#2B1513; --warn:#F2B84B; --warn-bg:#2A2110;
+  --brand:#45C9AA; --brand-ink:#06201A; --mark:#6A2B43; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0D111A; --surface:#151B27; --surface-2:#1E2636; --ink:#E7EBF3; --muted:#9AA3B7; --line:#2A3345;
+  --ok:#4CC38A; --ok-bg:#11261B; --bad:#FF7B70; --bad-bg:#2B1513; --warn:#F2B84B; --warn-bg:#2A2110;
+  --brand:#45C9AA; --brand-ink:#06201A; --mark:#6A2B43; color-scheme:dark; }
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+#settings{scroll-margin-top:70px}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:-.01em;text-wrap:balance;margin:0;line-height:1.15}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 110px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:15px;flex:none}
+.brand b{font-family:var(--f-display);font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px 5px 5px;font-weight:600;font-size:14px;max-width:46vw}
+.chip span.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px;flex:none}
+.sync{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.sync.ok{background:var(--ok)} .sync.err{background:var(--bad)} .sync.busy{background:var(--warn)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{max-width:760px;margin:0 auto;display:flex}
+nav.tabs button{flex:1;background:none;border:0;padding:9px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted)}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--brand)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.tiny{font-size:12.5px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:11px 16px;font-weight:700;font-size:15px;min-height:46px}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:14px;border-radius:10px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:18px;height:18px}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.mk{background:linear-gradient(180deg,transparent 58%,var(--mark) 58%,var(--mark) 92%,transparent 92%);padding:0 .08em}
+.hero{background:var(--brand);color:var(--brand-ink);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.hero h1{font-size:clamp(24px,5vw,32px)}
+.hero .btn.pri{background:var(--brand-ink);color:var(--brand);border-color:var(--brand-ink)}
+.hero .meta{display:flex;gap:18px;flex-wrap:wrap}
+.hero .meta div{display:flex;flex-direction:column}
+.hero .meta b{font-family:var(--f-mono);font-size:24px;line-height:1.1}
+.hero .meta span{font-size:13px;opacity:.85}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat b{display:block;font-family:var(--f-mono);font-size:22px}
+.stat span{font-size:13px;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand);border-radius:99px}
+.bar.ok i{background:var(--ok)}
+.unit{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);width:100%;text-align:left}
+.unit:hover{border-color:var(--muted)}
+.unit .n{width:40px;height:40px;border-radius:11px;background:var(--surface-2);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;flex:none}
+.unit.cur .n{background:var(--brand);color:var(--brand-ink)}
+.unit.lock{opacity:.6}
+.unit.rev .n{background:var(--mark);color:var(--ink)}
+.unit .t{font-weight:700}
+.pill{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.brand{background:var(--brand);color:var(--brand-ink)} .pill.warn{background:var(--warn-bg);color:var(--warn)}
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .en{font-weight:700}
+.dots{display:flex;gap:3px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--surface-2)}
+.dots i.on{background:var(--ok)}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none}
+.icon-btn svg{width:18px;height:18px}
+.gram{line-height:1.6}
+.gram h4{font-family:var(--f-display);font-size:16px;margin:14px 0 6px}
+.gram table{border-collapse:collapse;width:100%;font-size:14.5px}
+.gram td,.gram th{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+.gram th{background:var(--surface-2)}
+.gram .ex{border-left:3px solid var(--mark);padding:4px 10px;margin:6px 0;background:var(--surface-2);border-radius:0 8px 8px 0}
+.gram p{margin:6px 0}
+.tablewrap{overflow-x:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+.mode{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface)}
+.mode:hover{border-color:var(--brand)}
+.mode b{font-size:15.5px}
+.mode .ic{width:36px;height:36px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;color:var(--brand)}
+.mode .ic svg{width:20px;height:20px}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;overflow-x:auto}
+.heat i{width:13px;height:13px;border-radius:3px;background:var(--surface-2)}
+.heat i.l1{background:color-mix(in srgb,var(--brand) 30%,var(--surface-2))}
+.heat i.l2{background:color-mix(in srgb,var(--brand) 60%,var(--surface-2))}
+.heat i.l3{background:var(--brand)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;font-size:14px}
+.inp{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 13px;font-size:16px;width:100%}
+.inp:focus{border-color:var(--brand);outline:none}
+textarea.inp{min-height:160px;resize:vertical;line-height:1.55}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:7px 10px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:60;font-size:14px;max-width:90vw}
+/* runner */
+#run{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#run .rtop,#run .rbody,#run .rfoot{width:100%;max-width:700px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#run .rtop{display:flex;align-items:center;gap:12px;padding-block:12px}
+#run .rtop .bar{flex:1;height:10px}
+#run .rbody{flex:1;overflow-y:auto;padding-block:10px 20px;display:flex;flex-direction:column;gap:16px}
+#run .rfoot{padding-block:12px calc(14px + env(safe-area-inset-bottom,0px))}
+.fb{border-top:1px solid var(--line)}
+.fb.ok{background:var(--ok-bg)} .fb.bad{background:var(--bad-bg)} .fb.warn{background:var(--warn-bg)}
+.fb .rfoot{display:flex;flex-direction:column;gap:10px}
+.fb h3{font-size:19px}
+.fb.ok h3{color:var(--ok)} .fb.bad h3{color:var(--bad)} .fb.warn h3{color:var(--warn)}
+.kind{font-size:13px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:8px}
+.kind .tag{background:var(--surface-2);padding:3px 8px;border-radius:7px}
+.prompt{font-family:var(--f-display);font-size:clamp(24px,6vw,34px);font-weight:700;line-height:1.2}
+.prompt.s{font-size:clamp(20px,4.6vw,26px)}
+.sub{font-size:17px;color:var(--muted)}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;padding:14px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-size:16.5px;font-weight:600;display:flex;gap:12px;align-items:center}
+.opt .k{font-family:var(--f-mono);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.opt:hover{border-color:var(--brand)}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)} .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.audio-big{display:flex;gap:12px;align-items:center}
+.play{width:72px;height:72px;border-radius:20px;background:var(--brand);color:var(--brand-ink);border:0;display:grid;place-items:center}
+.play svg{width:34px;height:34px}
+.play.sm{width:48px;height:48px;border-radius:14px}
+.play.sm svg{width:22px;height:22px}
+.tiles{display:flex;flex-wrap:wrap;gap:8px}
+.tile{padding:9px 13px;border-radius:10px;border:1.5px solid var(--line);border-bottom-width:3px;background:var(--surface);font-weight:600;font-size:16px}
+.tile.used{visibility:hidden}
+.answer-zone{min-height:62px;border-bottom:2px dashed var(--line);padding-bottom:10px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.hint{font-family:var(--f-mono);letter-spacing:.18em;color:var(--muted);font-size:15px}
+.mic{width:84px;height:84px;border-radius:50%;border:0;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center}
+.mic svg{width:36px;height:36px}
+.mic.on{background:var(--bad);animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 50%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
+@media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
+.said{font-size:18px;line-height:1.7}
+.said .w-ok{color:var(--ok);font-weight:700} .said .w-miss{color:var(--bad);text-decoration:line-through}
+.flash{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;border-radius:18px;background:var(--surface);border:1px solid var(--line);cursor:pointer}
+.sheet{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;align-items:flex-end;justify-content:center}
+.sheet .panel{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px));max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+@media (min-width:700px){.sheet{align-items:center}.sheet .panel{border-radius:20px}}
+.prof{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);width:100%;text-align:left}
+.prof:hover{border-color:var(--brand)}
+.prof .av{width:40px;height:40px;font-size:16px}
+.colors{display:flex;gap:8px;flex-wrap:wrap}
+.colors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent}
+.colors button[aria-pressed="true"]{border-color:var(--ink)}
+.timer{font-family:var(--f-mono);font-size:22px;font-weight:600}
+.examtext{white-space:pre-wrap;line-height:1.65;font-size:16px;background:var(--surface-2);border-radius:12px;padding:14px}
+.corr{border-left:3px solid var(--bad);padding:6px 10px;background:var(--surface-2);border-radius:0 8px 8px 0}
+.corr s{color:var(--bad)} .corr b{color:var(--ok)}
+.empty{text-align:center;padding:28px 16px;color:var(--muted)}
+.diff{display:flex;flex-direction:column;gap:5px;font-size:17px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.6}
+.diff .lbl{display:inline-block;min-width:52px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.diff del{color:var(--bad);text-decoration:line-through;text-decoration-thickness:2px}
+.diff ins{text-decoration:none;color:var(--ok);font-weight:800;border-bottom:3px solid var(--ok)}
+details summary{cursor:pointer;font-weight:700}
+.kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.hide-sm{} @media (max-width:520px){.hide-sm{display:none}}
+</style>
+
+<header class="top"><div class="in">
+  <div class="brand"><div class="logo">FR</div><b>Francês · TEF / TCF</b></div>
+  <span class="sync" id="syncdot" title="Sincronização"></span>
+  <button class="chip" id="profchip" data-act="profiles" aria-label="Trocar perfil"><span class="av" id="chipav"></span><span class="nm" id="chipnm">Perfil</span></button>
+</div></header>
+<main class="wrap" id="main"></main>
+<nav class="tabs" id="tabs"><div class="in"></div></nav>
+<div id="run" hidden></div>
+<div id="sheet" hidden></div>
+
+<script>
+window.APP = {
+  key: "fr-tef-tcf",
+  lang: "fr-FR", ttsLang: "fr", dictLang: "fr", langName: "Francês",
+  voiceHints: /amélie|amelie|thomas|audrey|aurélie|marie|denise|henri|google français|chantal/i,
+  voiceSample: "Bonjour ! Je m'appelle Laura et j'apprends le français.",
+  unitWord: "Unidade", bookWord: "no curso", bookWord2: "etapa do curso", bookTitle: "Francês · A1 → B2 · TEF / TCF",
+  tagline: "Francês · do zero ao TEF / TCF",
+  welcomeTitle: "Francês todos os dias, com foco no TEF e no TCF.",
+  welcomeText: "Mesma metodologia do app de inglês: palavras e frases em repetição espaçada, com leitura, escrita, ditado e fala, do A1 ao B2. Na aba Provas você treina compreensão oral e escrita e faz tarefas de expressão no formato TEF Canada e TCF Canada, com correção do Claude.",
+  startQuestion: "Por onde começar?",
+  startHint: "Se você nunca estudou francês, comece pela Unidade 1. O app libera a próxima unidade quando você terminar a atual.",
+  specialChars: ["é","è","ê","à","â","ç","ù","û","î","ô","ë","ï","œ"],
+  articles: ["le","la","les","l'","un","une","des"],
+  keepCase: ["Monsieur","Madame","Sophie","Marie"],
+  units: [
+{ id:"f1", n:1, title:"Salutations", short:"Unidade 1", sub:"A1 · cumprimentar, apresentar-se · verbo être",
+grammar:`<h4>Verbo être (ser/estar)</h4><table><tr><td>je suis</td><td>nous sommes</td></tr><tr><td>tu es</td><td>vous êtes</td></tr><tr><td>il / elle est</td><td>ils / elles sont</td></tr></table>
+<h4>Tu ou vous?</h4><p><b>tu</b> = informal (amigos, família). <b>vous</b> = formal ou plural. Em prova e em situações oficiais, use <b>vous</b>.</p>
+<div class="ex">Comment vous appelez-vous ? — Je m'appelle Laura.<br>Enchantée ! (mulher escreve com -e; a pronúncia é igual)</div>
+<h4>Pronúncia</h4><p>Consoante final geralmente é muda: <b>suis</b> = "süí", <b>est</b> = "é". O <b>r</b> é na garganta.</p>`,
+vocab:[["bonjour","bom dia, olá"],["bonsoir","boa noite (ao chegar)"],["salut","oi, tchau (informal)"],["au revoir","tchau, até logo"],["à bientôt","até breve"],["merci","obrigado(a)"],["merci beaucoup","muito obrigado(a)"],["de rien","de nada"],["s'il vous plaît","por favor (formal)"],["s'il te plaît","por favor (informal)"],["excusez-moi","com licença, desculpe"],["pardon","perdão"],["oui","sim"],["non","não"],["madame","senhora"],["monsieur","senhor"],["je m'appelle","meu nome é"],["comment vous appelez-vous ?","qual é o seu nome? (formal)"],["enchanté","muito prazer"],["comment allez-vous ?","como vai o(a) senhor(a)?"],["ça va ?","tudo bem?"],["ça va bien","tudo bem, estou bem"],["très bien","muito bem"],["et vous ?","e você? (formal)"],["je suis","eu sou, eu estou"],["vous êtes","você é, vocês são"]],
+sentences:[["Bonjour, je m'appelle Laura.","Olá, meu nome é Laura."],["Enchantée, madame.","Muito prazer, senhora."],["Comment allez-vous ? Très bien, merci. Et vous ?","Como vai a senhora? Muito bem, obrigada. E você?"],["Salut ! Ça va ? Ça va bien, merci.","Oi! Tudo bem? Tudo bem, obrigada."],["Excusez-moi, vous êtes Monsieur Martin ?","Com licença, o senhor é o Sr. Martin?"],["Merci beaucoup ! De rien.","Muito obrigada! De nada."],["Au revoir et à bientôt !","Tchau e até breve!"]],
+write:["Apresente-se em 3 ou 4 frases: cumprimente, diga seu nome e como você está."]},
+
+{ id:"f2", n:2, title:"Identité", short:"Unidade 2", sub:"A1 · nacionalidade, cidade, idade · verbo avoir · -er",
+grammar:`<h4>Verbo avoir (ter)</h4><table><tr><td>j'ai</td><td>nous avons</td></tr><tr><td>tu as</td><td>vous avez</td></tr><tr><td>il / elle a</td><td>ils / elles ont</td></tr></table>
+<p>Idade usa <b>avoir</b>: <b>J'ai 36 ans</b> (literalmente "tenho 36 anos").</p>
+<h4>Verbos em -er (parler, habiter, travailler)</h4><table><tr><td>je parle</td><td>nous parlons</td></tr><tr><td>tu parles</td><td>vous parlez</td></tr><tr><td>il parle</td><td>ils parlent</td></tr></table><p>parle / parles / parlent soam iguais.</p>
+<h4>Cidade e país</h4><div class="ex">J'habite <b>à</b> Pindamonhangaba, <b>au</b> Brésil. (au = masc.; <b>en</b> France, <b>en</b> Italie = fem.; <b>aux</b> États-Unis)</div>
+<h4>Nacionalidade</h4><p>Masculino / feminino: brésilien / brésili<b>enne</b>, français / français<b>e</b>, canadien / canadi<b>enne</b>.</p>`,
+vocab:[["avoir","ter"],["j'ai","eu tenho"],["quel âge avez-vous ?","quantos anos você tem?"],["j'ai trente-six ans","eu tenho 36 anos"],["habiter","morar"],["j'habite à","eu moro em (cidade)"],["parler","falar"],["travailler","trabalhar"],["venir de","vir de"],["je viens du Brésil","eu venho do Brasil"],["brésilienne","brasileira"],["brésilien","brasileiro"],["français","francês (língua); francês (homem)"],["française","francesa"],["canadienne","canadense (mulher)"],["le pays","o país"],["la ville","a cidade"],["le Brésil","o Brasil"],["la France","a França"],["le Canada","o Canadá"],["le Québec","o Quebec"],["l'anglais","o inglês"],["le portugais","o português"],["marié","casado"],["célibataire","solteiro(a)"],["l'adresse","o endereço"],["le prénom","o primeiro nome"],["le nom de famille","o sobrenome"]],
+sentences:[["Je suis brésilienne et j'habite à Pindamonhangaba.","Eu sou brasileira e moro em Pindamonhangaba."],["J'ai trente-six ans.","Eu tenho 36 anos."],["Je parle portugais, anglais et un peu français.","Eu falo português, inglês e um pouco de francês."],["Vous venez d'où ? Je viens du Brésil.","De onde você vem? Eu venho do Brasil."],["Je travaille dans un cabinet comptable.","Eu trabalho em um escritório de contabilidade."],["Quel est votre nom de famille ?","Qual é o seu sobrenome?"],["Je voudrais habiter au Canada.","Eu gostaria de morar no Canadá."]],
+write:["Escreva um parágrafo de apresentação: nome, idade, nacionalidade, cidade, trabalho e idiomas."]},
+
+{ id:"f3", n:3, title:"La famille", short:"Unidade 3", sub:"A1 · família · possessivos mon/ma/mes",
+grammar:`<h4>Possessivos</h4><table><tr><th></th><th>masc.</th><th>fem.</th><th>plural</th></tr><tr><td>meu</td><td>mon</td><td>ma</td><td>mes</td></tr><tr><td>teu</td><td>ton</td><td>ta</td><td>tes</td></tr><tr><td>seu (dele/dela)</td><td>son</td><td>sa</td><td>ses</td></tr><tr><td>nosso</td><td colspan="2">notre</td><td>nos</td></tr><tr><td>seu (de vocês)</td><td colspan="2">votre</td><td>vos</td></tr><tr><td>deles</td><td colspan="2">leur</td><td>leurs</td></tr></table>
+<p>Concorda com a <b>coisa possuída</b>, não com o dono: <b>sa</b> fille = a filha dele <i>ou</i> dela. Antes de vogal usa-se mon: <b>mon</b> amie.</p>
+<h4>Il y a / c'est</h4><div class="ex">Dans ma famille, <b>il y a</b> quatre personnes. — Na minha família há quatro pessoas.<br><b>C'est</b> ma fille. — Esta é minha filha.</div>`,
+vocab:[["la famille","a família"],["le père","o pai"],["la mère","a mãe"],["les parents","os pais"],["le mari","o marido"],["la femme","a esposa, a mulher"],["le fils","o filho"],["la fille","a filha, a menina"],["les enfants","os filhos, as crianças"],["le frère","o irmão"],["la sœur","a irmã"],["le grand-père","o avô"],["la grand-mère","a avó"],["l'oncle","o tio"],["la tante","a tia"],["le cousin","o primo"],["la cousine","a prima"],["le neveu","o sobrinho"],["la nièce","a sobrinha"],["mon","meu"],["ma","minha"],["mes","meus, minhas"],["il y a","há, existe(m)"],["c'est","é, este é"],["aîné","mais velho (irmão)"],["cadet","mais novo (irmão)"]],
+sentences:[["C'est ma fille, elle s'appelle Sofia.","Esta é minha filha, ela se chama Sofia."],["Dans ma famille, il y a quatre personnes.","Na minha família há quatro pessoas."],["Mon mari travaille avec moi.","Meu marido trabalha comigo."],["J'ai un frère et deux sœurs.","Eu tenho um irmão e duas irmãs."],["Mes parents habitent à São Paulo.","Meus pais moram em São Paulo."],["Sa mère est professeure.","A mãe dele (dela) é professora."],["Vous avez des enfants ?","Você tem filhos?"]],
+write:["Descreva sua família: quem são, onde moram, o que fazem."]},
+
+{ id:"f4", n:4, title:"Les nombres et l'heure", short:"Unidade 4", sub:"A1 · números 0–100 · horas · preços",
+grammar:`<h4>Números</h4><table><tr><td>1 un</td><td>2 deux</td><td>3 trois</td><td>4 quatre</td><td>5 cinq</td></tr><tr><td>6 six</td><td>7 sept</td><td>8 huit</td><td>9 neuf</td><td>10 dix</td></tr><tr><td>11 onze</td><td>12 douze</td><td>13 treize</td><td>14 quatorze</td><td>15 quinze</td></tr><tr><td>16 seize</td><td>17 dix-sept</td><td>20 vingt</td><td>30 trente</td><td>40 quarante</td></tr><tr><td>50 cinquante</td><td>60 soixante</td><td>70 soixante-dix</td><td>80 quatre-vingts</td><td>90 quatre-vingt-dix</td></tr></table>
+<p>Na França: 70 = 60+10, 80 = 4×20, 90 = 4×20+10. (Na Bélgica e Suíça: septante, nonante.) 21 = vingt <b>et</b> un; 22 = vingt-deux; 100 = cent.</p>
+<h4>As horas</h4><div class="ex">Quelle heure est-il ? — Il est <b>huit heures et demie</b> (8h30).<br>Il est <b>midi</b> / <b>minuit</b>. · 9h15 = neuf heures <b>et quart</b> · 9h45 = dix heures <b>moins le quart</b></div>
+<p>Em documentos oficiais usa-se 24 h: <b>18 h 30</b> = dix-huit heures trente.</p>`,
+vocab:[["un","um"],["deux","dois"],["trois","três"],["quatre","quatro"],["cinq","cinco"],["six","seis"],["sept","sete"],["huit","oito"],["neuf","nove"],["dix","dez"],["onze","onze"],["douze","doze"],["quinze","quinze"],["vingt","vinte"],["trente","trinta"],["quarante","quarenta"],["cinquante","cinquenta"],["soixante","sessenta"],["soixante-dix","setenta"],["quatre-vingts","oitenta"],["quatre-vingt-dix","noventa"],["cent","cem"],["mille","mil"],["quelle heure est-il ?","que horas são?"],["il est huit heures","são oito horas"],["et demie","e meia"],["et quart","e quinze"],["moins le quart","quinze para"],["midi","meio-dia"],["minuit","meia-noite"],["combien ça coûte ?","quanto custa?"],["l'euro","o euro"],["le dollar","o dólar"]],
+sentences:[["Quelle heure est-il ? Il est huit heures et demie.","Que horas são? São oito e meia."],["Le magasin ouvre à neuf heures.","A loja abre às nove horas."],["Combien ça coûte ? Ça coûte vingt-cinq euros.","Quanto custa? Custa vinte e cinco euros."],["Mon numéro de téléphone est le zéro six, quarante-deux, soixante-dix-huit.","Meu número de telefone é zero seis, quarenta e dois, setenta e oito."],["Le train part à dix-huit heures trente.","O trem parte às 18h30."],["J'ai rendez-vous à midi.","Tenho um compromisso ao meio-dia."]],
+write:["Escreva seus horários de um dia comum (je me lève à…, je travaille de… à…)."]},
+
+{ id:"f5", n:5, title:"Le temps et le calendrier", short:"Unidade 5", sub:"A1 · dias, meses, estações, clima · aller",
+grammar:`<h4>Verbo aller (ir)</h4><table><tr><td>je vais</td><td>nous allons</td></tr><tr><td>tu vas</td><td>vous allez</td></tr><tr><td>il va</td><td>ils vont</td></tr></table>
+<p><b>à + le = au</b> · <b>à + les = aux</b>: je vais <b>au</b> cinéma, <b>à la</b> plage, <b>aux</b> États-Unis.</p>
+<h4>Datas e clima</h4><div class="ex">Nous sommes <b>le</b> 10 novembre. · <b>Le</b> lundi, je travaille (toda segunda).<br><b>Il fait</b> beau / chaud / froid. <b>Il pleut.</b> <b>Il neige.</b></div>
+<p>Dias e meses em minúscula: lundi, novembre. Estações: <b>en</b> été, <b>en</b> automne, <b>en</b> hiver, mas <b>au</b> printemps.</p>`,
+vocab:[["aller","ir"],["lundi","segunda-feira"],["mardi","terça-feira"],["mercredi","quarta-feira"],["jeudi","quinta-feira"],["vendredi","sexta-feira"],["samedi","sábado"],["dimanche","domingo"],["la semaine","a semana"],["le week-end","o fim de semana"],["le mois","o mês"],["l'année","o ano"],["janvier","janeiro"],["juin","junho"],["juillet","julho"],["août","agosto"],["décembre","dezembro"],["le printemps","a primavera"],["l'été","o verão"],["l'automne","o outono"],["l'hiver","o inverno"],["il fait beau","o tempo está bom"],["il fait froid","está frio"],["il fait chaud","está calor"],["il pleut","está chovendo"],["il neige","está nevando"],["aujourd'hui","hoje"],["demain","amanhã"],["hier","ontem"]],
+sentences:[["Aujourd'hui, nous sommes le dix novembre.","Hoje é dia dez de novembro."],["Le samedi, je vais au marché.","Aos sábados, eu vou à feira."],["En hiver, il fait très froid au Canada.","No inverno faz muito frio no Canadá."],["Il pleut, je reste à la maison.","Está chovendo, eu fico em casa."],["Demain, nous allons à la plage.","Amanhã nós vamos à praia."],["Mon anniversaire est en juillet.","Meu aniversário é em julho."]],
+write:["Descreva sua semana típica e o clima da sua cidade em cada estação."]},
+
+{ id:"f6", n:6, title:"Au café et au marché", short:"Unidade 6", sub:"A1-A2 · comida · artigos partitivos · je voudrais",
+grammar:`<h4>Artigos partitivos (quantidade indefinida)</h4><table><tr><td>du (masc.)</td><td>du pain, du fromage</td></tr><tr><td>de la (fem.)</td><td>de la viande, de la salade</td></tr><tr><td>de l' (vogal)</td><td>de l'eau</td></tr><tr><td>des (plural)</td><td>des légumes</td></tr></table>
+<p>Na negativa tudo vira <b>de / d'</b>: Je ne mange <b>pas de</b> viande. Je ne bois <b>pas d'</b>alcool.</p><p>Com quantidade também: <b>un kilo de</b> tomates, <b>une bouteille d'</b>eau, <b>beaucoup de</b> sucre.</p>
+<h4>Pedido educado</h4><div class="ex">Je <b>voudrais</b> un café, s'il vous plaît. · L'addition, s'il vous plaît.</div>`,
+vocab:[["je voudrais","eu gostaria, eu queria"],["manger","comer"],["boire","beber"],["le pain","o pão"],["le fromage","o queijo"],["la viande","a carne"],["le poulet","o frango"],["le poisson","o peixe"],["les légumes","os legumes"],["les fruits","as frutas"],["la pomme","a maçã"],["l'eau","a água"],["le vin","o vinho"],["la bière","a cerveja"],["le café","o café"],["le thé","o chá"],["le lait","o leite"],["le sucre","o açúcar"],["le beurre","a manteiga"],["un kilo de","um quilo de"],["une bouteille de","uma garrafa de"],["beaucoup de","muito(s)"],["un peu de","um pouco de"],["l'addition","a conta (restaurante)"],["le petit-déjeuner","o café da manhã"],["le déjeuner","o almoço"],["le dîner","o jantar"],["délicieux","delicioso"]],
+sentences:[["Je voudrais un café et un croissant, s'il vous plaît.","Eu queria um café e um croissant, por favor."],["Je ne mange pas de viande.","Eu não como carne."],["Vous voulez de l'eau ou du vin ?","Você quer água ou vinho?"],["Je prends un kilo de tomates.","Vou levar um quilo de tomates."],["L'addition, s'il vous plaît.","A conta, por favor."],["Au petit-déjeuner, je bois du café avec du lait.","No café da manhã, eu bebo café com leite."],["C'est délicieux !","Está delicioso!"]],
+write:["Escreva um diálogo pedindo comida num café ou restaurante."]},
+
+{ id:"rf1", review:true, n:7, covers:[1,2,3,4,5,6], title:"Révision A1", short:"Revisão A1", sub:"Unidades 1 a 6" },
+
+{ id:"f7", n:8, title:"Le logement", short:"Unidade 8", sub:"A2 · casa, cômodos, móveis · preposições de lugar",
+grammar:`<h4>Preposições de lugar</h4><table><tr><td>sur</td><td>sobre</td><td>sous</td><td>embaixo</td></tr><tr><td>dans</td><td>dentro</td><td>devant</td><td>na frente</td></tr><tr><td>derrière</td><td>atrás</td><td>entre</td><td>entre</td></tr><tr><td>à côté de</td><td>ao lado de</td><td>en face de</td><td>em frente a</td></tr><tr><td>près de</td><td>perto de</td><td>loin de</td><td>longe de</td></tr></table>
+<p><b>de + le = du</b>: à côté <b>du</b> salon. <b>de + les = des</b>.</p><div class="ex">Il y a un canapé <b>dans</b> le salon. Le chat est <b>sous</b> la table.</div>`,
+vocab:[["l'appartement","o apartamento"],["la maison","a casa"],["la pièce","o cômodo"],["la chambre","o quarto"],["le salon","a sala de estar"],["la cuisine","a cozinha"],["la salle de bains","o banheiro"],["les toilettes","o vaso sanitário, o lavabo"],["le balcon","a varanda"],["l'étage","o andar"],["l'ascenseur","o elevador"],["le loyer","o aluguel"],["le canapé","o sofá"],["le lit","a cama"],["la table","a mesa"],["la chaise","a cadeira"],["l'armoire","o guarda-roupa"],["la fenêtre","a janela"],["la porte","a porta"],["sur","sobre, em cima"],["sous","embaixo de"],["dans","dentro de, em"],["à côté de","ao lado de"],["en face de","em frente a"],["près de","perto de"],["loin de","longe de"],["grand","grande"],["petit","pequeno"],["lumineux","iluminado, claro"]],
+sentences:[["J'habite dans un appartement au troisième étage.","Eu moro num apartamento no terceiro andar."],["Il y a deux chambres et une grande cuisine.","Há dois quartos e uma cozinha grande."],["La salle de bains est à côté de la chambre.","O banheiro fica ao lado do quarto."],["Le loyer est de mille dollars par mois.","O aluguel é de mil dólares por mês."],["Mon appartement est petit mais très lumineux.","Meu apartamento é pequeno, mas muito iluminado."],["Le supermarché est en face de chez moi.","O supermercado fica em frente à minha casa."]],
+write:["Descreva sua casa ou apartamento: cômodos, móveis e o que há perto."]},
+
+{ id:"f8", n:9, title:"La routine", short:"Unidade 9", sub:"A2 · rotina · verbos pronominais",
+grammar:`<h4>Verbos pronominais</h4><table><tr><td>je <b>me</b> lève</td><td>nous <b>nous</b> levons</td></tr><tr><td>tu <b>te</b> lèves</td><td>vous <b>vous</b> levez</td></tr><tr><td>il <b>se</b> lève</td><td>ils <b>se</b> lèvent</td></tr></table>
+<p>Outros: se réveiller, se doucher, s'habiller, se coucher, se reposer, se dépêcher. Negativa: je <b>ne me</b> lève <b>pas</b> tôt.</p>
+<h4>Ordem do dia</h4><p><b>d'abord</b> (primeiro), <b>ensuite / puis</b> (depois), <b>enfin</b> (finalmente).</p>`,
+vocab:[["se réveiller","acordar"],["se lever","levantar-se"],["se doucher","tomar banho"],["s'habiller","vestir-se"],["se brosser les dents","escovar os dentes"],["prendre le petit-déjeuner","tomar café da manhã"],["partir au travail","sair para o trabalho"],["rentrer","voltar para casa"],["faire la cuisine","cozinhar"],["faire les courses","fazer compras (mercado)"],["faire le ménage","fazer a faxina"],["se reposer","descansar"],["se coucher","deitar-se"],["tôt","cedo"],["tard","tarde"],["d'abord","primeiro"],["ensuite","depois, em seguida"],["puis","depois"],["enfin","finalmente"],["toujours","sempre"],["souvent","frequentemente"],["parfois","às vezes"],["jamais","nunca"],["d'habitude","normalmente"]],
+sentences:[["Je me lève à six heures et demie.","Eu me levanto às seis e meia."],["D'abord, je me douche, ensuite je prends le petit-déjeuner.","Primeiro tomo banho, depois tomo café da manhã."],["Je pars au travail à huit heures.","Eu saio para o trabalho às oito horas."],["Le soir, je fais la cuisine pour ma famille.","À noite, eu cozinho para minha família."],["Je ne me couche jamais avant minuit.","Eu nunca me deito antes da meia-noite."],["Le samedi, nous faisons le ménage.","Aos sábados, fazemos a faxina."]],
+write:["Conte sua rotina de um dia de semana usando d'abord, ensuite, puis, enfin."]},
+
+{ id:"f9", n:10, title:"En ville", short:"Unidade 10", sub:"A2 · direções, transportes · imperativo · prendre",
+grammar:`<h4>Imperativo</h4><p>Igual ao presente, sem o pronome: <b>Prenez</b> la première rue à droite. <b>Tournez</b> à gauche. <b>Allez</b> tout droit.</p><p>Com tu, verbos em -er perdem o s: <b>Tourne</b> à gauche.</p>
+<h4>Prendre (pegar, tomar)</h4><table><tr><td>je prends</td><td>nous prenons</td></tr><tr><td>tu prends</td><td>vous prenez</td></tr><tr><td>il prend</td><td>ils prennent</td></tr></table>
+<p>Transporte: <b>en</b> bus, <b>en</b> voiture, <b>en</b> métro, <b>en</b> train · <b>à</b> pied, <b>à</b> vélo.</p>`,
+vocab:[["prendre","pegar, tomar"],["la rue","a rua"],["le quartier","o bairro"],["le centre-ville","o centro"],["la gare","a estação de trem"],["l'arrêt de bus","o ponto de ônibus"],["le métro","o metrô"],["la voiture","o carro"],["à pied","a pé"],["le vélo","a bicicleta"],["à droite","à direita"],["à gauche","à esquerda"],["tout droit","em frente, reto"],["tourner","virar"],["traverser","atravessar"],["le feu","o semáforo"],["le carrefour","o cruzamento"],["la banque","o banco"],["la pharmacie","a farmácia"],["la poste","o correio"],["l'hôpital","o hospital"],["la mairie","a prefeitura"],["où se trouve… ?","onde fica…?"],["c'est loin ?","é longe?"],["le billet","o bilhete, a passagem"]],
+sentences:[["Excusez-moi, où se trouve la gare ?","Com licença, onde fica a estação?"],["Allez tout droit, puis tournez à gauche.","Siga em frente, depois vire à esquerda."],["La pharmacie est à côté de la banque.","A farmácia fica ao lado do banco."],["Je prends le métro pour aller au travail.","Eu pego o metrô para ir ao trabalho."],["C'est loin ? Non, c'est à cinq minutes à pied.","É longe? Não, fica a cinco minutos a pé."],["Traversez la rue au feu.","Atravesse a rua no semáforo."]],
+write:["Explique a um turista como ir da sua casa até um lugar importante da cidade."]},
+
+{ id:"f10", n:11, title:"Les achats", short:"Unidade 11", sub:"A2 · roupas, cores · concordância dos adjetivos · demonstrativos",
+grammar:`<h4>Adjetivos: concordância</h4><p>Feminino: geralmente + <b>e</b> (vert → verte); plural: + <b>s</b>. Irregulares: blanc → blanche, beau → belle, nouveau → nouvelle, vieux → vieille.</p>
+<p>A maioria vem <b>depois</b> do substantivo (une robe <b>rouge</b>). Alguns curtos vêm antes: <b>petit, grand, beau, joli, bon, nouveau, vieux</b>.</p>
+<h4>Demonstrativos</h4><p><b>ce</b> pull · <b>cet</b> anorak (vogal) · <b>cette</b> chemise · <b>ces</b> chaussures.</p>
+<div class="ex">Je peux essayer <b>cette</b> veste ? — Quelle taille faites-vous ?</div>`,
+vocab:[["acheter","comprar"],["essayer","experimentar"],["le magasin","a loja"],["les vêtements","as roupas"],["la chemise","a camisa"],["le pantalon","a calça"],["la robe","o vestido"],["la jupe","a saia"],["le pull","o suéter"],["la veste","o casaco, a jaqueta"],["le manteau","o casaco (de inverno)"],["les chaussures","os sapatos"],["la taille","o tamanho"],["la pointure","o número (do sapato)"],["cher","caro"],["bon marché","barato"],["les soldes","a liquidação"],["rouge","vermelho"],["bleu","azul"],["vert","verde"],["noir","preto"],["blanc","branco"],["gris","cinza"],["ce","este, esse (masc.)"],["cette","esta, essa"],["ces","estes, estas"],["payer par carte","pagar com cartão"],["la caisse","o caixa"]],
+sentences:[["Je peux essayer cette veste noire ?","Posso experimentar esta jaqueta preta?"],["Quelle taille faites-vous ? Je fais du trente-huit.","Qual tamanho você usa? Uso 38."],["Ces chaussures sont trop chères.","Estes sapatos são caros demais."],["Je cherche un manteau chaud pour l'hiver.","Estou procurando um casaco quente para o inverno."],["Vous payez par carte ou en espèces ?","Vai pagar com cartão ou em dinheiro?"],["Elle porte une belle robe blanche.","Ela está usando um belo vestido branco."]],
+write:["Escreva um diálogo numa loja de roupas (tamanho, cor, preço, pagamento)."]},
+
+{ id:"f11", n:12, title:"Les loisirs", short:"Unidade 12", sub:"A2 · lazer, gostos · faire du/de la · negação",
+grammar:`<h4>Gostos</h4><p><b>aimer, adorer, préférer, détester</b> + artigo definido ou infinitivo: J'adore <b>le</b> cinéma. Je déteste <b>faire</b> du sport.</p>
+<h4>Faire / jouer</h4><p><b>faire du / de la / de l'</b> + atividade: faire du yoga, de la natation. <b>jouer au / à la</b> + jogo: jouer au tennis. <b>jouer du / de la</b> + instrumento: jouer du piano.</p>
+<h4>Negação</h4><p><b>ne … pas</b> (não), <b>ne … jamais</b> (nunca), <b>ne … plus</b> (não mais), <b>ne … rien</b> (nada). Na fala, o <b>ne</b> muitas vezes cai: "J'aime pas".</p>`,
+vocab:[["les loisirs","o lazer, hobbies"],["aimer","gostar, amar"],["adorer","adorar"],["préférer","preferir"],["détester","detestar"],["faire du sport","praticar esporte"],["faire de la natation","nadar (natação)"],["faire du yoga","fazer ioga"],["faire de la randonnée","fazer trilha"],["jouer au tennis","jogar tênis"],["jouer du piano","tocar piano"],["lire","ler"],["le livre","o livro"],["regarder la télé","ver TV"],["le film","o filme"],["le cinéma","o cinema"],["la musique","a música"],["le concert","o show"],["sortir","sair"],["voyager","viajar"],["la plage","a praia"],["la montagne","a montanha"],["ne … jamais","nunca"],["ne … plus","não mais"],["ne … rien","nada"],["le temps libre","o tempo livre"]],
+sentences:[["Pendant mon temps libre, j'aime lire et voyager.","No meu tempo livre, gosto de ler e viajar."],["Je fais du yoga deux fois par semaine.","Faço ioga duas vezes por semana."],["Ma fille joue du piano.","Minha filha toca piano."],["Je ne regarde jamais la télé le matin.","Eu nunca vejo TV de manhã."],["Il ne fait plus de sport.","Ele não pratica mais esporte."],["Nous préférons la montagne à la plage.","Preferimos a montanha à praia."]],
+write:["Fale dos seus hobbies: o que adora, o que detesta e o que nunca faz."]},
+
+{ id:"f12", n:13, title:"Le travail", short:"Unidade 13", sub:"A2 · profissões · pouvoir, vouloir, devoir · -ir/-re",
+grammar:`<h4>Modais</h4><table><tr><th></th><th>pouvoir (poder)</th><th>vouloir (querer)</th><th>devoir (dever)</th></tr><tr><td>je</td><td>peux</td><td>veux</td><td>dois</td></tr><tr><td>tu</td><td>peux</td><td>veux</td><td>dois</td></tr><tr><td>il</td><td>peut</td><td>veut</td><td>doit</td></tr><tr><td>nous</td><td>pouvons</td><td>voulons</td><td>devons</td></tr><tr><td>vous</td><td>pouvez</td><td>voulez</td><td>devez</td></tr><tr><td>ils</td><td>peuvent</td><td>veulent</td><td>doivent</td></tr></table>
+<p>Seguidos de infinitivo: Je <b>dois envoyer</b> le rapport.</p>
+<h4>Profissão sem artigo</h4><div class="ex">Je suis comptable. (não "une comptable") · Il est ingénieur.</div>`,
+vocab:[["le travail","o trabalho"],["le métier","a profissão"],["le bureau","o escritório"],["l'entreprise","a empresa"],["le collègue","o colega"],["le patron","o chefe, o patrão"],["le client","o cliente"],["la réunion","a reunião"],["le rapport","o relatório"],["la facture","a fatura, a nota"],["le salaire","o salário"],["comptable","contador(a)"],["gérant","gerente"],["ingénieur","engenheiro(a)"],["infirmière","enfermeira"],["avocat","advogado"],["pouvoir","poder"],["vouloir","querer"],["devoir","dever, ter que"],["finir","terminar"],["choisir","escolher"],["répondre","responder"],["attendre","esperar"],["envoyer un courriel","enviar um e-mail"],["à temps plein","em tempo integral"],["à temps partiel","meio período"]],
+sentences:[["Je suis gérante financière dans un cabinet comptable.","Sou gerente financeira num escritório de contabilidade."],["Je dois envoyer les factures aux clients.","Eu tenho que enviar as faturas aos clientes."],["Vous pouvez répondre à ce courriel ?","Você pode responder a este e-mail?"],["La réunion finit à onze heures.","A reunião termina às onze horas."],["Mes collègues veulent travailler à distance.","Meus colegas querem trabalhar a distância."],["J'attends la réponse de mon patron.","Estou esperando a resposta do meu chefe."]],
+write:["Descreva seu trabalho: cargo, tarefas, colegas e horários."]},
+
+{ id:"rf2", review:true, n:14, covers:[8,9,10,11,12,13], title:"Révision A2", short:"Revisão A2", sub:"Unidades 8 a 13" },
+
+{ id:"f13", n:15, title:"Le passé composé (avoir)", short:"Unidade 15", sub:"A2-B1 · contar o passado · particípios",
+grammar:`<h4>Passé composé com avoir</h4><p>avoir (presente) + particípio passado. Ação concluída.</p><div class="ex">J'<b>ai mangé</b>. Nous <b>avons fini</b>. Ils <b>ont répondu</b>.</div>
+<table><tr><th>infinitivo</th><th>particípio</th></tr><tr><td>-er (parler)</td><td>parlé</td></tr><tr><td>-ir (finir)</td><td>fini</td></tr><tr><td>-re (attendre)</td><td>attendu</td></tr><tr><td>avoir / être</td><td>eu / été</td></tr><tr><td>faire / prendre</td><td>fait / pris</td></tr><tr><td>voir / lire / boire</td><td>vu / lu / bu</td></tr><tr><td>écrire / dire / mettre</td><td>écrit / dit / mis</td></tr><tr><td>pouvoir / vouloir / devoir</td><td>pu / voulu / dû</td></tr></table>
+<p>Negativa: Je <b>n'ai pas</b> vu le film.</p>`,
+vocab:[["hier soir","ontem à noite"],["la semaine dernière","a semana passada"],["l'année dernière","o ano passado"],["il y a deux jours","há dois dias"],["déjà","já"],["pas encore","ainda não"],["j'ai mangé","eu comi"],["j'ai fini","eu terminei"],["j'ai attendu","eu esperei"],["j'ai fait","eu fiz"],["j'ai pris","eu peguei, eu tomei"],["j'ai vu","eu vi"],["j'ai lu","eu li"],["j'ai bu","eu bebi"],["j'ai écrit","eu escrevi"],["j'ai dit","eu disse"],["j'ai eu","eu tive"],["j'ai été","eu fui, eu estive"],["j'ai dû","eu tive que"],["j'ai perdu","eu perdi"],["j'ai oublié","eu esqueci"],["j'ai rencontré","eu conheci, encontrei"]],
+sentences:[["Hier soir, j'ai regardé un film avec ma fille.","Ontem à noite, vi um filme com minha filha."],["J'ai déjà lu ce livre.","Eu já li este livro."],["Je n'ai pas encore fini le rapport.","Ainda não terminei o relatório."],["Nous avons pris le train il y a deux jours.","Nós pegamos o trem há dois dias."],["Qu'est-ce que vous avez fait le week-end dernier ?","O que você fez no fim de semana passado?"],["J'ai oublié mon passeport à la maison.","Esqueci meu passaporte em casa."]],
+write:["Conte o que você fez no último fim de semana (pelo menos 6 verbos no passé composé)."]},
+
+{ id:"f14", n:16, title:"Voyages (passé composé avec être)", short:"Unidade 16", sub:"B1 · viagens · verbos com être e concordância",
+grammar:`<h4>Verbos com être</h4><p>Verbos de movimento/mudança de estado e todos os pronominais: <b>aller, venir, arriver, partir, entrer, sortir, monter, descendre, naître, mourir, rester, tomber, retourner, devenir</b> (+ se lever, s'habiller…).</p>
+<p>O particípio <b>concorda</b> com o sujeito: elle est allé<b>e</b>, nous sommes parti<b>s</b>, elles sont arrivé<b>es</b>.</p><div class="ex">Je suis arrivée à Montréal en janvier. — Cheguei a Montreal em janeiro (mulher: arrivé<b>e</b>).</div>`,
+vocab:[["le voyage","a viagem"],["voyager","viajar"],["l'aéroport","o aeroporto"],["l'avion","o avião"],["le vol","o voo"],["le passeport","o passaporte"],["la valise","a mala"],["les bagages","a bagagem"],["l'hôtel","o hotel"],["réserver","reservar"],["la réservation","a reserva"],["l'aller-retour","ida e volta"],["je suis allée","eu fui (mulher)"],["je suis arrivée","eu cheguei (mulher)"],["je suis partie","eu parti (mulher)"],["je suis restée","eu fiquei (mulher)"],["nous sommes rentrés","nós voltamos"],["elle est née","ela nasceu"],["il est tombé","ele caiu"],["je me suis levée","eu me levantei (mulher)"],["le séjour","a estadia"],["à l'étranger","no exterior"],["les vacances","as férias"],["visiter","visitar (lugar)"],["rendre visite à","visitar (pessoa)"]],
+sentences:[["L'année dernière, je suis allée à Orlando avec ma famille.","No ano passado, fui a Orlando com minha família."],["Nous sommes partis tôt et nous sommes arrivés le soir.","Saímos cedo e chegamos à noite."],["Elle est restée deux semaines à Québec.","Ela ficou duas semanas em Quebec."],["Mon vol a eu trois heures de retard.","Meu voo atrasou três horas."],["J'ai réservé un hôtel près du centre-ville.","Reservei um hotel perto do centro."],["Ils sont rentrés de vacances hier.","Eles voltaram de férias ontem."]],
+write:["Conte uma viagem marcante: para onde foi, como, quanto tempo ficou e o que fez."]},
+
+{ id:"f15", n:17, title:"Souvenirs (imparfait)", short:"Unidade 17", sub:"B1 · infância, descrição no passado · imparfait × passé composé",
+grammar:`<h4>Imparfait</h4><p>Radical de <b>nous</b> no presente + -ais, -ais, -ait, -ions, -iez, -aient. (nous <b>parl</b>ons → je parlais). Exceção: être → <b>ét</b>ais.</p>
+<table><tr><th>Imparfait</th><th>Passé composé</th></tr><tr><td>descrição, cenário, hábito no passado</td><td>ação pontual, concluída</td></tr><tr><td>Quand j'étais petite, je jouais dans la rue.</td><td>Un jour, je suis tombée.</td></tr></table>
+<div class="ex">Il <b>pleuvait</b> quand nous <b>sommes arrivés</b>. — Chovia quando chegamos.</div>`,
+vocab:[["quand j'étais petite","quando eu era pequena"],["l'enfance","a infância"],["autrefois","antigamente"],["à cette époque","naquela época"],["chaque été","todo verão"],["d'habitude","normalmente"],["il était","ele era, ele estava"],["il y avait","havia"],["j'avais","eu tinha"],["je faisais","eu fazia"],["j'allais","eu ia"],["je pouvais","eu podia"],["le souvenir","a lembrança"],["se souvenir de","lembrar-se de"],["l'école primaire","a escola primária"],["le quartier","o bairro"],["les voisins","os vizinhos"],["heureux","feliz"],["timide","tímido"],["tranquille","tranquilo"],["pendant que","enquanto"],["soudain","de repente"]],
+sentences:[["Quand j'étais petite, j'habitais à la campagne.","Quando eu era pequena, morava no interior."],["Chaque été, nous allions chez mes grands-parents.","Todo verão, íamos à casa dos meus avós."],["Il y avait beaucoup d'enfants dans mon quartier.","Havia muitas crianças no meu bairro."],["Je lisais pendant que ma mère faisait la cuisine.","Eu lia enquanto minha mãe cozinhava."],["Il pleuvait quand nous sommes arrivés.","Chovia quando chegamos."],["Je me souviens bien de mon école primaire.","Lembro bem da minha escola primária."]],
+write:["Descreva uma lembrança da infância (imparfait para o cenário, passé composé para os acontecimentos)."]},
+
+{ id:"f16", n:18, title:"Projets (futur)", short:"Unidade 18", sub:"B1 · planos · futur proche e futur simple",
+grammar:`<h4>Futur proche</h4><p><b>aller</b> + infinitivo — planos próximos e certos: Je <b>vais déménager</b> en mars.</p>
+<h4>Futur simple</h4><p>Infinitivo + -ai, -as, -a, -ons, -ez, -ont: je parler<b>ai</b>, nous finir<b>ons</b>. Irregulares: être → <b>ser</b>ai · avoir → <b>aur</b>ai · aller → <b>ir</b>ai · faire → <b>fer</b>ai · pouvoir → <b>pourr</b>ai · venir → <b>viendr</b>ai · voir → <b>verr</b>ai · devoir → <b>devr</b>ai.</p>
+<div class="ex"><b>Quand</b> j'<b>aurai</b> mon visa, je <b>partirai</b>. (depois de quand, futuro!)</div>`,
+vocab:[["le projet","o projeto, o plano"],["l'avenir","o futuro"],["bientôt","em breve"],["l'année prochaine","o ano que vem"],["dans cinq ans","daqui a cinco anos"],["je vais déménager","eu vou me mudar"],["je serai","eu serei"],["j'aurai","eu terei"],["j'irai","eu irei"],["je ferai","eu farei"],["je pourrai","eu poderei"],["je viendrai","eu virei"],["obtenir","obter"],["le visa","o visto"],["la résidence permanente","a residência permanente"],["immigrer","imigrar"],["s'installer","instalar-se, estabelecer-se"],["réussir un examen","passar numa prova"],["l'objectif","o objetivo"],["espérer","esperar (ter esperança)"],["prévoir","prever, planejar"]],
+sentences:[["L'année prochaine, je vais passer le TCF Canada.","No ano que vem, vou fazer o TCF Canada."],["Quand j'aurai mon visa, nous partirons au Canada.","Quando eu tiver meu visto, partiremos para o Canadá."],["Dans cinq ans, je parlerai couramment français.","Daqui a cinco anos, falarei francês fluentemente."],["Nous allons nous installer à Montréal.","Vamos nos estabelecer em Montreal."],["J'espère réussir l'examen du premier coup.","Espero passar na prova de primeira."],["Mon objectif est d'obtenir la résidence permanente.","Meu objetivo é obter a residência permanente."]],
+write:["Escreva seus planos para os próximos 5 anos (futur proche e futur simple)."]},
+
+{ id:"f17", n:19, title:"La santé", short:"Unidade 19", sub:"B1 · corpo, sintomas, consulta · avoir mal à · il faut",
+grammar:`<h4>Avoir mal à</h4><div class="ex">J'ai mal <b>à la</b> tête / <b>au</b> dos / <b>aux</b> dents / <b>à l'</b>estomac.</div>
+<h4>Il faut / il ne faut pas</h4><p>Obrigação impessoal + infinitivo: <b>Il faut</b> prendre rendez-vous. <b>Il ne faut pas</b> fumer.</p>
+<h4>Conselhos</h4><p><b>Vous devriez</b> (você deveria) + infinitivo: Vous devriez vous reposer.</p>`,
+vocab:[["la santé","a saúde"],["le corps","o corpo"],["la tête","a cabeça"],["le dos","as costas"],["le ventre","a barriga"],["la gorge","a garganta"],["les dents","os dentes"],["le bras","o braço"],["la jambe","a perna"],["avoir mal à","ter dor em"],["la fièvre","a febre"],["le rhume","o resfriado"],["tousser","tossir"],["être malade","estar doente"],["le médecin","o médico"],["prendre rendez-vous","marcar consulta"],["l'ordonnance","a receita médica"],["le médicament","o remédio"],["l'urgence","o pronto-socorro"],["l'assurance maladie","o seguro saúde"],["il faut","é preciso"],["vous devriez","você deveria"],["se reposer","descansar"],["guérir","curar, sarar"]],
+sentences:[["J'ai mal à la tête depuis hier.","Estou com dor de cabeça desde ontem."],["Je voudrais prendre rendez-vous avec le médecin.","Eu gostaria de marcar uma consulta com o médico."],["Il faut prendre ce médicament trois fois par jour.","É preciso tomar este remédio três vezes ao dia."],["Vous devriez vous reposer et boire beaucoup d'eau.","Você deveria descansar e beber muita água."],["Ma fille a de la fièvre et elle tousse.","Minha filha está com febre e tossindo."],["Au Québec, il faut une carte d'assurance maladie.","No Quebec, é preciso um cartão do seguro saúde."]],
+write:["Escreva uma mensagem para remarcar uma consulta médica, explicando seus sintomas."]},
+
+{ id:"f18", n:20, title:"Démarches et services", short:"Unidade 20", sub:"B1 · banco, aluguel, administração · conditionnel de politesse",
+grammar:`<h4>Condicional de polidez</h4><p>Radical do futuro + terminações do imparfait: je voudr<b>ais</b>, j'aimer<b>ais</b>, pourr<b>iez</b>-vous…?</p>
+<div class="ex"><b>Pourriez-vous</b> m'envoyer le formulaire ? · <b>J'aimerais</b> ouvrir un compte bancaire. · <b>Serait-il possible de</b> payer en deux fois ?</div>
+<p>Estrutura de e-mail formal: <b>Madame, Monsieur,</b> … <b>Je vous prie d'agréer, Madame, Monsieur, mes salutations distinguées.</b> (ou, mais simples: <b>Cordialement</b>).</p>`,
+vocab:[["la démarche","o procedimento, o trâmite"],["le formulaire","o formulário"],["remplir","preencher"],["la pièce d'identité","o documento de identidade"],["le justificatif de domicile","o comprovante de residência"],["ouvrir un compte","abrir uma conta"],["le compte bancaire","a conta bancária"],["le propriétaire","o proprietário"],["le locataire","o inquilino"],["le bail","o contrato de aluguel"],["louer","alugar"],["le dépôt de garantie","o depósito caução"],["les charges","as despesas (condomínio)"],["le délai","o prazo"],["le rendez-vous","o horário marcado"],["pourriez-vous… ?","o(a) senhor(a) poderia…?"],["j'aimerais","eu gostaria"],["je vous remercie","agradeço"],["cordialement","atenciosamente"],["madame, monsieur","prezados senhores"],["la plainte","a reclamação"],["rembourser","reembolsar"]],
+sentences:[["J'aimerais ouvrir un compte bancaire.","Eu gostaria de abrir uma conta bancária."],["Pourriez-vous m'envoyer le formulaire par courriel ?","O senhor poderia me enviar o formulário por e-mail?"],["Il faut remplir ce formulaire et fournir une pièce d'identité.","É preciso preencher este formulário e apresentar um documento."],["Le bail est d'un an et les charges sont comprises.","O contrato é de um ano e as despesas estão incluídas."],["Je vous écris pour faire une réclamation.","Escrevo para fazer uma reclamação."],["Je vous remercie de votre réponse rapide.","Agradeço sua resposta rápida."]],
+write:["Escreva um e-mail formal ao proprietário de um apartamento pedindo informações (preço, encargos, visita)."]},
+
+{ id:"rf3", review:true, n:21, covers:[15,16,17,18,19,20], title:"Révision B1", short:"Revisão B1", sub:"Unidades 15 a 20" },
+
+{ id:"f19", n:22, title:"L'emploi", short:"Unidade 22", sub:"B1-B2 · procurar emprego, entrevista · pronomes COD/COI, y, en",
+grammar:`<h4>Pronomes complemento</h4><table><tr><th>COD (o, a)</th><td>me, te, <b>le, la</b>, nous, vous, <b>les</b></td><td>Je <b>le</b> lis. (le rapport)</td></tr><tr><th>COI (lhe)</th><td>me, te, <b>lui</b>, nous, vous, <b>leur</b></td><td>Je <b>lui</b> réponds. (à mon patron)</td></tr><tr><th>y</th><td>lugar / à + coisa</td><td>J'<b>y</b> vais. Je <b>y</b> pense.</td></tr><tr><th>en</th><td>de + coisa / quantidade</td><td>J'<b>en</b> ai trois. J'<b>en</b> parle.</td></tr></table>
+<p>Ficam <b>antes do verbo</b> (ou antes do auxiliar): Je <b>l'</b>ai envoyé. Com infinitivo: Je vais <b>lui</b> écrire.</p>`,
+vocab:[["l'emploi","o emprego"],["chercher un emploi","procurar emprego"],["l'offre d'emploi","a vaga de emprego"],["le CV","o currículo"],["la lettre de motivation","a carta de apresentação"],["l'entretien d'embauche","a entrevista de emprego"],["postuler","candidatar-se"],["embaucher","contratar"],["licencier","demitir"],["l'expérience","a experiência"],["les compétences","as competências"],["le poste","o cargo"],["le diplôme","o diploma"],["la formation","a formação, o treinamento"],["les horaires","os horários"],["les avantages sociaux","os benefícios"],["le contrat à durée indéterminée","o contrato por tempo indeterminado"],["la période d'essai","o período de experiência"],["j'en ai","eu tenho (disso)"],["j'y vais","eu vou (lá)"],["être à l'aise avec","estar confortável com"]],
+sentences:[["J'ai postulé à une offre d'emploi de comptable.","Eu me candidatei a uma vaga de contadora."],["J'ai envoyé mon CV et je l'ai aussi déposé en personne.","Enviei meu currículo e também o entreguei pessoalmente."],["Le recruteur m'a appelée et je lui ai répondu tout de suite.","O recrutador me ligou e respondi a ele na hora."],["De l'expérience en finance ? Oui, j'en ai dix ans.","Experiência em finanças? Sim, tenho dez anos."],["Je suis à l'aise avec les logiciels de gestion.","Tenho facilidade com softwares de gestão."],["Quels sont les avantages sociaux de ce poste ?","Quais são os benefícios deste cargo?"]],
+write:["Escreva uma carta de apresentação curta para uma vaga na sua área."]},
+
+{ id:"f20", n:23, title:"Société et environnement", short:"Unidade 23", sub:"B2 · dar opinião · subjuntivo",
+grammar:`<h4>Subjuntivo</h4><p>Radical de <b>ils</b> no presente + -e, -es, -e, -ions, -iez, -ent (ils parl<b>ent</b> → que je parl<b>e</b>). Irregulares: être → que je <b>sois</b>; avoir → que j'<b>aie</b>; faire → que je <b>fasse</b>; aller → que j'<b>aille</b>; pouvoir → que je <b>puisse</b>.</p>
+<p>Depois de: <b>il faut que</b>, <b>il est important que</b>, <b>je veux que</b>, <b>bien que</b>, <b>pour que</b>, <b>je ne pense pas que</b>…</p>
+<div class="ex">Il faut que nous <b>réduisions</b> nos déchets.<br><b>Je pense que</b> c'est utile (indicativo) × <b>Je ne pense pas que</b> ce <b>soit</b> utile (subjuntivo).</div>`,
+vocab:[["l'environnement","o meio ambiente"],["le réchauffement climatique","o aquecimento global"],["la pollution","a poluição"],["les déchets","o lixo, os resíduos"],["recycler","reciclar"],["le gaspillage","o desperdício"],["les transports en commun","o transporte público"],["l'énergie renouvelable","a energia renovável"],["la société","a sociedade"],["l'inégalité","a desigualdade"],["le logement social","a moradia popular"],["le bénévolat","o voluntariado"],["à mon avis","na minha opinião"],["selon moi","segundo eu, para mim"],["je suis d'accord","eu concordo"],["je ne suis pas d'accord","eu não concordo"],["il faut que","é preciso que"],["il est important que","é importante que"],["bien que","embora"],["pour que","para que"],["que je sois","que eu seja"],["que je fasse","que eu faça"]],
+sentences:[["À mon avis, il faut que chacun recycle ses déchets.","Na minha opinião, é preciso que cada um recicle seu lixo."],["Il est important que les villes développent les transports en commun.","É importante que as cidades desenvolvam o transporte público."],["Bien que ce soit difficile, nous devons changer nos habitudes.","Embora seja difícil, precisamos mudar nossos hábitos."],["Je ne pense pas que cette mesure soit suffisante.","Não acho que esta medida seja suficiente."],["Le gaspillage alimentaire est un vrai problème de société.","O desperdício de alimentos é um verdadeiro problema social."],["Je fais du bénévolat pour que les enfants aient accès à la lecture.","Faço voluntariado para que as crianças tenham acesso à leitura."]],
+write:["Dê sua opinião (150 palavras): as cidades deveriam proibir carros no centro?"]},
+
+{ id:"f21", n:24, title:"Médias et numérique", short:"Unidade 24", sub:"B2 · internet, redes, informação · pronomes relativos",
+grammar:`<h4>Pronomes relativos</h4><table><tr><th>qui</th><td>sujeito</td><td>L'article <b>qui</b> parle de l'IA…</td></tr><tr><th>que</th><td>objeto direto</td><td>Le site <b>que</b> je consulte…</td></tr><tr><th>où</th><td>lugar ou tempo</td><td>La ville <b>où</b> j'habite… Le jour <b>où</b>…</td></tr><tr><th>dont</th><td>substitui "de + …"</td><td>L'application <b>dont</b> je parle… (parler de)</td></tr><tr><th>lequel / laquelle</th><td>depois de preposição</td><td>L'outil avec <b>lequel</b> je travaille…</td></tr></table>
+<p>Ce qui / ce que = o que: <b>Ce qui</b> m'inquiète, c'est la désinformation.</p>`,
+vocab:[["les médias","a mídia"],["l'actualité","as notícias, a atualidade"],["l'article","o artigo"],["le journal","o jornal"],["les réseaux sociaux","as redes sociais"],["la désinformation","a desinformação"],["les fausses nouvelles","as notícias falsas"],["la vie privée","a privacidade"],["les données personnelles","os dados pessoais"],["le télétravail","o trabalho remoto"],["l'écran","a tela"],["télécharger","baixar"],["l'application","o aplicativo"],["le logiciel","o software"],["l'intelligence artificielle","a inteligência artificial"],["en ligne","on-line"],["qui","que (sujeito)"],["que","que (objeto)"],["dont","do qual, de que"],["ce qui","o que (sujeito)"],["ce que","o que (objeto)"],["s'informer","informar-se"]],
+sentences:[["Les réseaux sociaux sont des outils qui peuvent informer ou désinformer.","As redes sociais são ferramentas que podem informar ou desinformar."],["Le logiciel que nous utilisons au bureau est très pratique.","O software que usamos no escritório é muito prático."],["C'est l'application dont je t'ai parlé.","Este é o aplicativo de que te falei."],["Ce qui m'inquiète, c'est la protection des données personnelles.","O que me preocupa é a proteção dos dados pessoais."],["Le télétravail a changé la façon dont nous travaillons.","O trabalho remoto mudou a forma como trabalhamos."],["Je m'informe surtout en ligne.","Eu me informo principalmente on-line."]],
+write:["Escreva um texto (150 palavras) sobre as vantagens e desvantagens do trabalho remoto."]},
+
+{ id:"f22", n:25, title:"Argumenter", short:"Unidade 25", sub:"B2 · conectores lógicos para EE e EO",
+grammar:`<h4>Conectores essenciais para TEF/TCF</h4><table><tr><th>Introduzir</th><td>tout d'abord, premièrement, d'une part … d'autre part</td></tr><tr><th>Acrescentar</th><td>de plus, en outre, par ailleurs, également</td></tr><tr><th>Opor</th><td>cependant, pourtant, en revanche, néanmoins, alors que</td></tr><tr><th>Conceder</th><td>certes … mais, bien que (+ subj.), même si</td></tr><tr><th>Causa</th><td>parce que, car, puisque, grâce à, à cause de</td></tr><tr><th>Consequência</th><td>donc, ainsi, c'est pourquoi, par conséquent</td></tr><tr><th>Exemplo</th><td>par exemple, notamment, comme</td></tr><tr><th>Concluir</th><td>en conclusion, pour conclure, en somme, finalement</td></tr></table>
+<p>Estrutura de texto argumentativo: <b>introdução</b> (tema + sua posição) → <b>2 argumentos com exemplos</b> → <b>contra-argumento</b> → <b>conclusão</b>.</p>`,
+vocab:[["tout d'abord","em primeiro lugar"],["d'une part","por um lado"],["d'autre part","por outro lado"],["de plus","além disso"],["en outre","além do mais"],["par ailleurs","por outro lado, aliás"],["cependant","no entanto"],["pourtant","contudo, mesmo assim"],["en revanche","em contrapartida"],["néanmoins","todavia"],["certes","é verdade que, certamente"],["même si","mesmo que"],["car","pois"],["puisque","já que"],["grâce à","graças a"],["à cause de","por causa de"],["donc","portanto"],["par conséquent","consequentemente"],["c'est pourquoi","é por isso que"],["notamment","especialmente, notadamente"],["en conclusion","em conclusão"],["en somme","em suma"]],
+sentences:[["Tout d'abord, le télétravail permet de gagner du temps.","Em primeiro lugar, o trabalho remoto permite ganhar tempo."],["De plus, il réduit la pollution liée aux transports.","Além disso, reduz a poluição ligada aos transportes."],["Certes, il favorise l'isolement, mais on peut organiser des réunions en personne.","É verdade que favorece o isolamento, mas é possível organizar reuniões presenciais."],["En revanche, certains métiers ne peuvent pas se faire à distance.","Em contrapartida, certas profissões não podem ser feitas a distância."],["Par conséquent, il faut trouver un équilibre.","Consequentemente, é preciso encontrar um equilíbrio."],["En conclusion, je pense que le modèle hybride est la meilleure solution.","Em conclusão, acho que o modelo híbrido é a melhor solução."]],
+write:["Texto argumentativo (180 palavras): o ensino a distância é tão eficaz quanto o presencial? Use pelo menos 6 conectores."]},
+
+{ id:"f23", n:26, title:"Vivre au Canada", short:"Unidade 26", sub:"B2 · imigração, serviços, cultura quebequense",
+grammar:`<h4>Falar de mudança e adaptação</h4><div class="ex">Depuis que je suis arrivée, … · Ça fait deux ans que j'habite ici. · Je me suis habituée au froid. · J'ai eu du mal à comprendre l'accent.</div>
+<p><b>depuis</b> + duração (ação que continua): J'apprends le français <b>depuis</b> six mois. <b>il y a</b> + duração (passado concluído): Je suis arrivée <b>il y a</b> six mois.</p>
+<h4>Québécismes frequentes</h4><table><tr><td>le dépanneur</td><td>loja de conveniência</td></tr><tr><td>la fin de semaine</td><td>o fim de semana (= le week-end)</td></tr><tr><td>le courriel</td><td>o e-mail</td></tr><tr><td>magasiner</td><td>fazer compras</td></tr><tr><td>le souper</td><td>o jantar (dîner = almoço)</td></tr><tr><td>c'est correct</td><td>está tudo bem</td></tr></table>`,
+vocab:[["l'immigration","a imigração"],["le nouvel arrivant","o recém-chegado"],["la citoyenneté","a cidadania"],["le permis de travail","a permissão de trabalho"],["la demande","o pedido, a solicitação"],["déposer une demande","fazer um pedido"],["l'intégration","a integração"],["s'adapter","adaptar-se"],["s'habituer à","acostumar-se a"],["avoir du mal à","ter dificuldade em"],["depuis","desde, há (ainda em curso)"],["ça fait … que","faz … que"],["le dépanneur","a loja de conveniência (Quebec)"],["le courriel","o e-mail"],["magasiner","fazer compras (Quebec)"],["le souper","o jantar (Quebec)"],["la fin de semaine","o fim de semana (Quebec)"],["la garderie","a creche"],["les impôts","os impostos"],["la déclaration de revenus","a declaração de imposto de renda"],["la francisation","o curso de francês para imigrantes"],["la communauté","a comunidade"]],
+sentences:[["Ça fait six mois que j'apprends le français.","Faz seis meses que estudo francês."],["Au début, j'ai eu du mal à comprendre l'accent québécois.","No início, tive dificuldade em entender o sotaque quebequense."],["Je me suis vite habituée au froid.","Eu me acostumei rápido ao frio."],["Nous avons déposé notre demande de résidence permanente.","Fizemos nosso pedido de residência permanente."],["Les nouveaux arrivants peuvent suivre des cours de francisation gratuits.","Os recém-chegados podem fazer cursos de francês gratuitos."],["La fin de semaine, on aime magasiner au centre-ville.","No fim de semana, gostamos de fazer compras no centro."]],
+write:["Escreva uma mensagem a um amigo contando seus primeiros meses (reais ou imaginados) vivendo no Canadá."]},
+
+{ id:"f24", n:27, title:"Hypothèses", short:"Unidade 27", sub:"B2 · si + imparfait / conditionnel · conditionnel passé",
+grammar:`<h4>Frases com si</h4><table><tr><th>Hipótese</th><th>Estrutura</th><th>Exemplo</th></tr><tr><td>real / provável</td><td>si + presente → futuro</td><td>Si j'ai le temps, j'étudierai.</td></tr><tr><td>imaginária</td><td>si + imparfait → condicional</td><td>Si j'avais plus de temps, j'étudierais tous les jours.</td></tr><tr><td>irreal no passado</td><td>si + plus-que-parfait → condicional passado</td><td>Si j'avais su, je serais venue.</td></tr></table>
+<p>Nunca use futuro ou condicional logo depois de <b>si</b>.</p><p>Condicional passado: avoir/être no condicional + particípio: j'<b>aurais aimé</b>, elle <b>serait partie</b>.</p>`,
+vocab:[["si j'avais","se eu tivesse"],["si j'étais","se eu fosse"],["je ferais","eu faria"],["j'irais","eu iria"],["je pourrais","eu poderia"],["il faudrait","seria preciso"],["ce serait","seria"],["j'aurais aimé","eu teria gostado"],["j'aurais dû","eu deveria ter"],["si j'avais su","se eu soubesse (antes)"],["à ta place","no seu lugar"],["au cas où","caso"],["à condition que","desde que"],["sinon","senão"],["la chance","a sorte, a chance"],["le regret","o arrependimento"],["regretter","lamentar, arrepender-se"],["imaginer","imaginar"],["supposer","supor"],["le rêve","o sonho"]],
+sentences:[["Si j'avais plus de temps, j'étudierais le français tous les jours.","Se eu tivesse mais tempo, estudaria francês todos os dias."],["Si je réussis le TCF, nous déménagerons au Canada.","Se eu passar no TCF, vamos nos mudar para o Canadá."],["À ta place, je commencerais par la compréhension orale.","No seu lugar, eu começaria pela compreensão oral."],["Si j'avais su, je serais venue plus tôt.","Se eu soubesse, teria vindo mais cedo."],["J'aurais dû réserver le vol plus tôt.","Eu deveria ter reservado o voo antes."],["Ce serait génial de vivre à Québec.","Seria incrível morar em Quebec."]],
+write:["Escreva 150 palavras: se você pudesse morar em qualquer cidade do mundo, qual escolheria e o que faria lá?"]},
+
+{ id:"rf4", review:true, n:28, covers:[22,23,24,25,26,27], title:"Révision B2", short:"Revisão B2", sub:"Unidades 22 a 27" }
+  ],
+
+  exam: {
+    title: "TEF Canada e TCF Canada",
+    intro: "Treine as quatro competências no formato das provas. CO e CE são de múltipla escolha com nível indicado (A2 a C1); EE e EO têm cronômetro, contagem de palavras e avaliação do Claude com nota e NCLC estimados.",
+    estimate(byLvl) {
+      const order = ["A1","A2","B1","B2","C1"]; let reached = null;
+      for (const l of order) { const v = byLvl[l]; if (!v) continue; if (v[0] / v[1] >= 0.7) reached = l; else break; }
+      const nclc = { A1: "1–2", A2: "3–4", B1: "5–6", B2: "7–8", C1: "9–10" };
+      return reached ? `Estimativa: você acertou bem as questões até o nível ${reached} (≈ NCLC ${nclc[reached]}). Isto é só uma referência para o treino, não equivale à nota oficial. Para Entrada Expressa costuma-se mirar NCLC 7 (B2) nas quatro competências.` : "Estimativa: ainda abaixo do A2 nestas questões. Continue a sessão diária das unidades e volte ao treino em algumas semanas.";
+    },
+    info: `<div class="card gram"><div class="eyebrow">Formato das provas</div>
+<h4>TCF Canada (France Éducation international)</h4><div class="tablewrap"><table><tr><th>Prova</th><th>Formato</th><th>Duração</th><th>Nota</th></tr><tr><td>Compreensão oral</td><td>39 questões de múltipla escolha</td><td>35 min</td><td>0–699</td></tr><tr><td>Compreensão escrita</td><td>39 questões de múltipla escolha</td><td>60 min</td><td>0–699</td></tr><tr><td>Expressão escrita</td><td>3 tarefas</td><td>60 min</td><td>0–20</td></tr><tr><td>Expressão oral</td><td>3 tarefas, face a face</td><td>12 min</td><td>0–20</td></tr></table></div>
+<h4>TEF Canada (CCI Paris Île-de-France)</h4><div class="tablewrap"><table><tr><th>Prova</th><th>Formato</th><th>Duração</th></tr><tr><td>Compreensão escrita</td><td>40 questões</td><td>60 min</td></tr><tr><td>Compreensão oral</td><td>40 questões</td><td>40 min</td></tr><tr><td>Expressão escrita</td><td>Seção A: continuar uma notícia (mín. 80 palavras) · Seção B: defender um ponto de vista (mín. 200 palavras)</td><td>60 min</td></tr><tr><td>Expressão oral</td><td>Seção A: obter informações (5 min) · Seção B: argumentar para convencer (10 min)</td><td>15 min</td></tr></table></div><p>Notas de 0 a 699 por prova, convertidas em NCLC 1 a 12.</p>
+<h4>Meta comum: NCLC 7 no TCF Canada</h4><div class="tablewrap"><table><tr><th>NCLC</th><th>CO</th><th>CE</th><th>EE</th><th>EO</th></tr><tr><td>10+</td><td>549–699</td><td>549–699</td><td>16–20</td><td>16–20</td></tr><tr><td>9</td><td>523–548</td><td>524–548</td><td>14–15</td><td>14–15</td></tr><tr><td>8</td><td>503–522</td><td>499–523</td><td>12–13</td><td>12–13</td></tr><tr><td><b>7</b></td><td><b>458–502</b></td><td><b>453–498</b></td><td><b>10–11</b></td><td><b>10–11</b></td></tr><tr><td>6</td><td>398–457</td><td>406–452</td><td>7–9</td><td>7–9</td></tr><tr><td>5</td><td>369–397</td><td>375–405</td><td>6</td><td>6</td></tr></table></div>
+<p class="tiny muted">Formatos e tabela conforme as páginas da France Éducation international, digiSchool e IRCC consultadas em novembro de 2026. Confirme no site oficial antes de se inscrever.</p>
+<h4>Estratégia de estudo</h4><p>1) Sessão diária das unidades (vocabulário e gramática). 2) Três vezes por semana: 5 questões de CO e 5 de CE aqui. 3) Uma vez por semana: uma tarefa de EE e uma de EO com correção. 4) A cada mês: o simulado rápido, para acompanhar a evolução por nível.</p></div>`,
+
+    co: [
+{ level:"A2", ctx:"Anúncio numa estação de trem.", audio:[{v:0,s:"Annonce",t:"Mesdames et messieurs, le train à destination de Québec, prévu à quatorze heures dix, partira avec vingt minutes de retard. Il partira de la voie numéro trois. Merci de votre compréhension."}], q:"O que acontece com o trem para Quebec?", options:["Foi cancelado.","Vai partir 20 minutos atrasado.","Mudou para a plataforma 2.","Vai partir às 14h10 em ponto."], answer:1, explain:"« partira avec vingt minutes de retard » = vai partir com 20 minutos de atraso, da plataforma (voie) 3." },
+{ level:"A2", ctx:"Mensagem na secretária eletrônica.", audio:[{v:1,s:"Sophie",t:"Salut Laura, c'est Sophie. Je ne peux pas venir au cinéma ce soir, ma fille est malade. On peut y aller samedi après-midi ? Rappelle-moi. Bisous !"}], q:"Por que Sophie liga?", options:["Para convidar Laura ao cinema hoje.","Para cancelar e propor sábado à tarde.","Para dizer que está doente.","Para pedir um favor à filha de Laura."], answer:1, explain:"Ela não pode ir hoje porque a filha está doente e propõe « samedi après-midi »." },
+{ level:"A2", ctx:"Numa padaria.", audio:[{v:0,s:"Vendeuse",t:"Bonjour madame, qu'est-ce que je vous sers ?"},{v:1,s:"Cliente",t:"Bonjour, je voudrais deux baguettes et quatre croissants, s'il vous plaît."},{v:0,s:"Vendeuse",t:"Voilà. Ça fait sept euros quarante."}], q:"Quanto a cliente paga?", options:["4,70 €","7,14 €","7,40 €","17,40 €"], answer:2, explain:"« sept euros quarante » = 7,40 €." },
+{ level:"B1", ctx:"Conversa entre colegas.", audio:[{v:0,s:"Marc",t:"Tu as vu le courriel de la direction ? À partir de janvier, on pourra faire du télétravail deux jours par semaine."},{v:1,s:"Julie",t:"Oui, enfin ! Moi, je vais choisir le lundi et le vendredi. Ça m'évitera les embouteillages."}], q:"Qual é a novidade anunciada?", options:["Todos vão trabalhar de casa a semana inteira.","A partir de janeiro, dois dias de teletrabalho por semana.","O escritório vai fechar às segundas e sextas.","Haverá um novo estacionamento."], answer:1, explain:"« deux jours par semaine » de télétravail a partir de janeiro; Julie escolhe segunda e sexta para evitar engarrafamentos." },
+{ level:"B1", ctx:"Previsão do tempo no rádio.", audio:[{v:0,s:"Radio",t:"Demain, à Montréal, le matin sera ensoleillé mais froid, autour de moins cinq degrés. En après-midi, la neige arrivera par l'ouest et on attend jusqu'à quinze centimètres en soirée."}], q:"Como estará o tempo amanhã à tarde em Montreal?", options:["Sol e calor.","Chuva forte.","Neve chegando do oeste.","Vento sem precipitação."], answer:2, explain:"« En après-midi, la neige arrivera par l'ouest » — até 15 cm à noite." },
+{ level:"B1", ctx:"Entrevista de rádio com uma recém-chegada.", audio:[{v:0,s:"Journaliste",t:"Qu'est-ce qui a été le plus difficile quand vous êtes arrivée ?"},{v:1,s:"Ana",t:"Honnêtement, ce n'était pas le froid. C'était de comprendre les gens au téléphone. En personne, je voyais les gestes, ça m'aidait. Au téléphone, j'étais perdue."}], q:"Qual foi a maior dificuldade de Ana?", options:["O frio.","Entender as pessoas ao telefone.","Encontrar trabalho.","Os gestos dos quebequenses."], answer:1, explain:"Ela diz que não era o frio, e sim « comprendre les gens au téléphone »." },
+{ level:"B1", ctx:"Ligação para uma clínica.", audio:[{v:0,s:"Secrétaire",t:"Clinique du Parc, bonjour."},{v:1,s:"Patient",t:"Bonjour, j'avais rendez-vous jeudi à dix heures avec le docteur Roy, mais je dois le déplacer."},{v:0,s:"Secrétaire",t:"Le docteur Roy n'a plus de place cette semaine. Je peux vous proposer mardi prochain à quinze heures."}], q:"O que a secretária propõe?", options:["Quinta às 10h.","Terça que vem às 15h.","Um outro médico esta semana.","Cancelar a consulta."], answer:1, explain:"« mardi prochain à quinze heures » = terça que vem às 15h." },
+{ level:"B2", ctx:"Trecho de um programa sobre consumo.", audio:[{v:0,s:"Chroniqueuse",t:"Selon une étude récente, un ménage canadien jette en moyenne l'équivalent de mille dollars de nourriture par an. Paradoxalement, ce ne sont pas les restaurants qui gaspillent le plus, mais bien les foyers, souvent parce qu'on achète trop et qu'on comprend mal les dates de péremption."}], q:"Segundo a cronista, quem mais desperdiça alimentos?", options:["Os restaurantes.","Os supermercados.","As residências.","Os produtores agrícolas."], answer:2, explain:"« ce ne sont pas les restaurants… mais bien les foyers » (as residências), por comprar demais e entender mal as datas de validade." },
+{ level:"B2", ctx:"Debate sobre transporte urbano.", audio:[{v:0,s:"Élu",t:"Rendre le transport en commun gratuit, c'est séduisant, mais qui va payer ? Je préfère investir dans la fréquence des autobus. Un service gratuit mais qui passe toutes les quarante minutes, ça n'attire personne."},{v:1,s:"Militante",t:"Je ne suis pas d'accord. Pour les familles modestes, le prix est le premier obstacle."}], q:"Qual é a posição do político (élu)?", options:["É a favor da gratuidade total.","Prefere investir na frequência dos ônibus.","Quer aumentar o preço das passagens.","Concorda totalmente com a militante."], answer:1, explain:"Ele acha a gratuidade sedutora mas cara e diz « Je préfère investir dans la fréquence des autobus »." },
+{ level:"B2", ctx:"Mensagem de um empregador.", audio:[{v:0,s:"Recruteur",t:"Bonjour madame França, ici Paul Gagnon de la firme Lavoie et associés. Nous avons bien reçu votre candidature et votre profil nous intéresse. Avant de fixer une entrevue, pourriez-vous nous faire parvenir une copie de votre diplôme et l'équivalence de vos études délivrée par le ministère ?"}], q:"O que o recrutador pede antes de marcar a entrevista?", options:["Cartas de recomendação.","Cópia do diploma e a equivalência dos estudos.","Que ela ligue de volta para escolher um horário.","Um teste de francês."], answer:1, explain:"« une copie de votre diplôme et l'équivalence de vos études »." },
+{ level:"B2", ctx:"Conversa entre amigos.", audio:[{v:0,s:"Hugo",t:"Alors, cette nouvelle job, ça se passe bien ?"},{v:1,s:"Camille",t:"Le salaire est meilleur, c'est sûr. Par contre, je passe presque deux heures par jour dans le trafic. Si ça continue, je vais demander à faire du télétravail, sinon je chercherai autre chose."}], q:"O que Camille pensa fazer?", options:["Pedir demissão imediatamente.","Pedir teletrabalho; senão, procurar outro emprego.","Mudar-se para perto do trabalho.","Pedir aumento de salário."], answer:1, explain:"« je vais demander à faire du télétravail, sinon je chercherai autre chose »." },
+{ level:"C1", ctx:"Trecho de uma conferência.", audio:[{v:0,s:"Conférencier",t:"On présente souvent le bilinguisme comme un simple atout sur le marché du travail. C'est réducteur. Les recherches montrent qu'il modifie aussi la manière dont on aborde les problèmes : passer d'une langue à l'autre exerce une forme de flexibilité cognitive qui dépasse largement le domaine linguistique."}], q:"Qual é a ideia principal do conferencista?", options:["O bilinguismo serve sobretudo para conseguir emprego.","Reduzir o bilinguismo a uma vantagem profissional é simplista: ele afeta a forma de pensar.","As pesquisas sobre bilinguismo são inconclusivas.","Mudar de língua prejudica a concentração."], answer:1, explain:"« C'est réducteur » — ele defende que o bilinguismo desenvolve flexibilidade cognitiva além da linguagem." },
+{ level:"C1", ctx:"Editorial de rádio.", audio:[{v:0,s:"Éditorialiste",t:"Ce n'est pas tant la hausse des loyers qui inquiète que son rythme. Lorsque les salaires progressent de trois pour cent et les loyers de douze, l'écart ne se résorbe pas de lui-même ; il exige une intervention publique, que les gouvernements successifs ont soigneusement évitée."}], q:"O que mais preocupa o editorialista?", options:["O valor absoluto dos aluguéis.","O ritmo de aumento dos aluguéis, muito mais rápido que o dos salários.","A queda dos salários.","O excesso de intervenção do governo."], answer:1, explain:"« Ce n'est pas tant la hausse … que son rythme » — aluguéis +12% contra salários +3%, e falta de intervenção pública." },
+{ level:"B1", ctx:"Aviso num supermercado.", audio:[{v:0,s:"Annonce",t:"Chers clients, notre magasin fermera exceptionnellement à dix-huit heures ce soir en raison de travaux. Nous rouvrirons demain matin à l'heure habituelle, soit huit heures."}], q:"Por que a loja fecha mais cedo hoje?", options:["Por causa de um feriado.","Por causa de obras.","Por falta de funcionários.","Por um inventário."], answer:1, explain:"« en raison de travaux » = por causa de obras. Reabre amanhã às 8h." }
+    ],
+
+    ce: [
+{ level:"A2", text:"Piscine municipale – Horaires d'hiver\nDu lundi au vendredi : 7 h – 21 h\nSamedi : 9 h – 18 h\nDimanche : fermé\nCours de natation pour enfants : mercredi et samedi matin. Inscription obligatoire à l'accueil.", q:"Quando há aulas de natação para crianças?", options:["Todos os dias de manhã.","Quarta e sábado de manhã.","Domingo à tarde.","Segunda a sexta à noite."], answer:1, explain:"« mercredi et samedi matin ». Domingo a piscina fecha." },
+{ level:"A2", text:"Bonjour à tous,\nLa réunion de parents aura lieu le jeudi 14 novembre à 18 h 30 dans la salle 12. Nous parlerons du voyage scolaire au Québec. Merci de confirmer votre présence avant lundi.\nMme Dubois, enseignante", q:"O que os pais devem fazer?", options:["Pagar a viagem até segunda.","Confirmar presença até segunda.","Ir à sala 12 na segunda.","Enviar documentos para o Quebec."], answer:1, explain:"« Merci de confirmer votre présence avant lundi »." },
+{ level:"A2", text:"À LOUER – Appartement 4 ½, Rosemont\n2 chambres, cuisine rénovée, balcon. Près du métro. 1 450 $ par mois, chauffage inclus. Animaux non acceptés. Libre le 1er juillet.", q:"Qual afirmação está correta?", options:["O aquecimento é pago à parte.","Aceitam animais.","Fica perto do metrô.","Tem três quartos."], answer:2, explain:"« Près du métro ». Aquecimento incluído; animais não aceitos; 2 quartos (o « 4 ½ » quebequense conta cômodos, não quartos)." },
+{ level:"B1", text:"Objet : Votre commande n° 48217\nMadame,\nNous vous informons que l'article commandé (machine à café, modèle Duo) est en rupture de stock. Nous pouvons vous proposer soit un remboursement complet sous cinq jours ouvrables, soit le modèle supérieur au même prix. Merci de nous indiquer votre choix.", q:"O que a loja propõe?", options:["Esperar o produto voltar ao estoque.","Reembolso total ou um modelo superior pelo mesmo preço.","Um desconto de 5%.","Trocar por outra cor."], answer:1, explain:"« soit un remboursement complet… soit le modèle supérieur au même prix »." },
+{ level:"B1", text:"De plus en plus de Montréalais choisissent le vélo pour aller au travail, même en hiver. La Ville a déneigé cette année plus de 200 km de pistes cyclables. Selon un sondage, 40 % des cyclistes d'hiver disent économiser plus de 1 000 $ par an par rapport à la voiture.", q:"Segundo o texto, por que muitos usam a bicicleta no inverno?", options:["Porque o metrô está em greve.","Por economia: muitos dizem poupar mais de 1 000 $ por ano.","Porque a cidade proibiu carros.","Porque não neva mais em Montreal."], answer:1, explain:"O texto cita a economia em relação ao carro e as ciclovias limpas de neve." },
+{ level:"B1", text:"Avis aux locataires\nEn raison de travaux de plomberie, l'eau chaude sera coupée le mardi 3 décembre de 9 h à 15 h. Nous vous recommandons de prévoir vos besoins en conséquence. Nous nous excusons des inconvénients.\nLa gestion", q:"O que vai acontecer na terça?", options:["A água será cortada o dia todo.","A água quente será cortada das 9h às 15h.","Os inquilinos devem sair do prédio.","Haverá reunião sobre a hidráulica."], answer:1, explain:"« l'eau chaude sera coupée … de 9 h à 15 h »." },
+{ level:"B1", text:"Marie, 34 ans : « J'ai commencé le bénévolat à la banque alimentaire pour rencontrer des gens après mon arrivée. Au final, c'est là que j'ai trouvé mon emploi actuel : un des responsables m'a recommandée à son entreprise. »", q:"O que o voluntariado trouxe para Marie?", options:["Apenas novas amizades.","Uma recomendação que levou ao emprego atual.","Comida gratuita.","Um diploma reconhecido."], answer:1, explain:"Um responsável « m'a recommandée à son entreprise » e ela conseguiu o emprego." },
+{ level:"B2", text:"Longtemps considéré comme un privilège réservé aux cadres, le télétravail s'est démocratisé. Pourtant, les études nuancent l'enthousiasme initial : si la productivité individuelle se maintient, la collaboration informelle — ces échanges spontanés près de la machine à café — s'érode, au détriment de l'innovation.", q:"Segundo o texto, qual é o efeito negativo do teletrabalho?", options:["Queda da produtividade individual.","Redução das trocas informais, prejudicando a inovação.","Aumento dos custos para as empresas.","Mais horas extras."], answer:1, explain:"« la collaboration informelle … s'érode, au détriment de l'innovation ». A produtividade individual se mantém." },
+{ level:"B2", text:"La Ville lance une consultation publique sur l'interdiction des voitures dans le Vieux-Québec durant l'été. Les commerçants craignent une baisse de fréquentation, tandis que les résidents soulignent le bruit et la pollution. Les citoyens peuvent donner leur avis en ligne jusqu'au 15 mars.", q:"Qual é a posição dos comerciantes?", options:["São a favor por causa do barulho.","Temem perder clientes.","Querem estender a proibição ao ano todo.","Não foram consultados."], answer:1, explain:"« Les commerçants craignent une baisse de fréquentation »." },
+{ level:"B2", text:"Contrairement à une idée reçue, apprendre une langue à l'âge adulte n'est pas voué à l'échec. Si l'enfant acquiert plus facilement l'accent, l'adulte dispose d'atouts considérables : une meilleure capacité d'analyse, des stratégies d'apprentissage conscientes et, surtout, une motivation souvent plus précise.", q:"Qual é a tese do texto?", options:["Adultos não conseguem aprender línguas.","Adultos têm vantagens próprias para aprender línguas, embora as crianças peguem o sotaque mais fácil.","Crianças sempre aprendem melhor em todos os aspectos.","O sotaque é a parte mais importante."], answer:1, explain:"O texto contesta uma « idée reçue » e lista vantagens do adulto: análise, estratégias e motivação." },
+{ level:"B2", text:"Madame,\nSuite à notre entretien du 4 octobre, nous avons le plaisir de vous proposer le poste d'analyste financière. Votre entrée en fonction est prévue le 2 décembre, sous réserve de la vérification de vos références. Une période d'essai de trois mois s'appliquera.", q:"A oferta de emprego depende de quê?", options:["De uma segunda entrevista.","Da verificação das referências.","Do fim do período de experiência.","De um exame de francês."], answer:1, explain:"« sous réserve de la vérification de vos références » = sujeito à verificação das referências." },
+{ level:"C1", text:"L'essor des plateformes de livraison a redessiné nos villes plus discrètement qu'on ne le pense. Les « cuisines fantômes », ces restaurants sans salle ni enseigne, se multiplient dans les zones industrielles. Commodes pour le consommateur, elles posent néanmoins une question que les urbanistes peinent à trancher : que devient la rue commerçante lorsque le commerce n'a plus besoin de la rue ?", q:"Que questão o texto levanta?", options:["Se as plataformas de entrega são legais.","O futuro das ruas comerciais quando o comércio não precisa mais delas.","Como abrir uma cozinha fantasma.","A qualidade da comida entregue."], answer:1, explain:"A pergunta final: « que devient la rue commerçante lorsque le commerce n'a plus besoin de la rue ? »." },
+{ level:"C1", text:"Il serait illusoire de croire que la seule maîtrise de la langue suffise à l'intégration professionnelle des immigrants. Les obstacles tiennent tout autant à la reconnaissance des diplômes, aux réseaux, voire à des biais d'embauche rarement assumés. Réduire le débat à la langue, c'est faire peser sur l'individu une responsabilité largement collective.", q:"O que o autor critica?", options:["O ensino de francês aos imigrantes.","Reduzir a integração profissional apenas à questão da língua.","O reconhecimento automático de diplomas.","Os imigrantes que não falam francês."], answer:1, explain:"Para ele, colocar tudo na língua é transferir ao indivíduo uma responsabilidade « largement collective »." },
+{ level:"B1", text:"Bibliothèque du quartier – Nouveau service\nVous pouvez maintenant emprunter des livres numériques gratuitement avec votre carte de membre. Téléchargez l'application, entrez votre numéro de carte et votre NIP. Maximum : 5 livres pour 21 jours.", q:"O que é preciso para usar o novo serviço?", options:["Pagar uma taxa mensal.","Ter cartão de membro e o aplicativo.","Ir à biblioteca a cada 21 dias.","Comprar os livros digitais."], answer:1, explain:"Gratuito, com « votre carte de membre », o aplicativo e o NIP (senha)." }
+    ],
+
+    ee: [
+{ exam:"TCF", task:"Tâche 1", short:"Mensagem a um amigo", time:"~15 min", words:"60 a 120 palavras", secs:900, prompt:"Vous venez de déménager dans une nouvelle ville. Vous écrivez un message à un ami pour lui décrire votre nouveau logement et votre quartier, et pour l'inviter à venir vous voir.", tips:"<p>Saudação (Salut Paul,) → contexto (je viens de déménager) → descrição do apartamento e do bairro → convite com data → despedida (À bientôt, Bises).</p><p>Use: il y a, à côté de, près de, j'aimerais que tu viennes…</p>", model:"Salut Paul,\nComment vas-tu ? Je viens de m'installer à Québec ! J'habite dans un petit appartement lumineux au deuxième étage, avec deux chambres et un grand balcon. Le quartier est très agréable : il y a une boulangerie juste en face, un parc à côté et le métro est à cinq minutes à pied. Le samedi, il y a même un marché de producteurs.\nJ'aimerais beaucoup que tu viennes me voir. Tu es libre le week-end du 14 ? On pourrait visiter le Vieux-Québec ensemble.\nÀ bientôt,\nLaura" },
+{ exam:"TCF", task:"Tâche 2", short:"Artigo de blog / relato", time:"~20 min", words:"120 a 150 palavras", secs:1200, prompt:"Sur le blog de votre ville, vous racontez une expérience marquante (une fête, un voyage, une rencontre) et vous expliquez pourquoi elle a été importante pour vous.", tips:"<p>Título → quando/onde (imparfait para cenário) → o que aconteceu (passé composé) → sentimentos → por que foi importante → conclusão.</p>", model:"" },
+{ exam:"TCF", task:"Tâche 3", short:"Texto argumentativo a partir de 2 documentos", time:"~25 min", words:"120 a 180 palavras", secs:1500, prompt:"Document 1 : « Le télétravail améliore la qualité de vie : moins de transport, plus de temps en famille. »\nDocument 2 : « Le télétravail isole les employés et efface la frontière entre vie professionnelle et vie privée. »\nPrésentez les deux points de vue (40 à 60 mots), puis donnez votre opinion argumentée (80 à 120 mots).", tips:"<p>Parte 1: resuma os dois documentos com suas palavras (Selon le premier document… En revanche, le second…).</p><p>Parte 2: sua posição + 2 argumentos com exemplos + conclusão. Use conectores (de plus, cependant, par conséquent).</p>", model:"" },
+{ exam:"TEF", task:"Section A", short:"Continuar uma notícia (fait divers)", time:"25 min", words:"mínimo 80 palavras", secs:1500, prompt:"Continuez cet article : « Hier matin, à Montréal, une chienne a été retrouvée dans le métro, seule, avec un message attaché à son collier… »\nRacontez la suite de l'histoire de façon logique, à la troisième personne, au passé.", tips:"<p>Mantenha o estilo jornalístico, na 3ª pessoa, no passado. Diga quem, o quê, onde, como terminou. Use passé composé + imparfait.</p>", model:"" },
+{ exam:"TEF", task:"Section B", short:"Carta ao jornal: defender um ponto de vista", time:"35 min", words:"mínimo 200 palavras", secs:2100, prompt:"Vous avez lu dans un journal : « Il faudrait interdire les téléphones portables dans toutes les écoles, y compris pour les élèves du secondaire. » Vous écrivez au journal pour donner votre opinion, avec au moins trois arguments.", tips:"<p>Madame, Monsieur, → referência ao artigo → sua posição clara → 3 argumentos com exemplos → contra-argumento refutado → conclusão → fórmula de despedida.</p>", model:"" },
+{ exam:"TCF", task:"Tâche 1", short:"E-mail a um colega", time:"~15 min", words:"60 a 120 palavras", secs:900, prompt:"Vous êtes absente du bureau la semaine prochaine. Vous écrivez un courriel à un collègue pour lui expliquer les tâches à faire pendant votre absence et le remercier.", tips:"<p>Bonjour Marc, → motivo e datas da ausência → lista de tarefas (il faudrait que tu…, pourrais-tu…) → agradecimento → Bonne semaine,</p>", model:"" }
+    ],
+
+    eo: [
+{ exam:"TCF", task:"Tâche 1", short:"Entrevista dirigida: apresente-se", time:"2 min", secs:120, prompt:"Présentez-vous : parlez de votre famille, de votre travail, de vos loisirs et de vos projets. (L'examinateur peut vous poser des questions.)", tips:"<p>Fale sem pressa: nome, idade, cidade, família, profissão, rotina, hobbies, por que aprende francês, planos. Prepare 8 a 10 frases-base e treine aqui até sair natural.</p>" },
+{ exam:"TCF", task:"Tâche 2", short:"Interação: obter informações", time:"5 min 30 (2 de preparação)", secs:330, prompt:"Vous voulez vous inscrire dans un club de sport près de chez vous. Vous posez des questions à l'employé(e) : horaires, prix, activités, conditions d'inscription, possibilité d'essai gratuit…", tips:"<p>Prepare 8 a 10 perguntas variadas: Est-ce que…? Quels sont…? Combien coûte…? Est-il possible de…? Pourriez-vous me dire…? Reaja às respostas (D'accord, et…?).</p>" },
+{ exam:"TCF", task:"Tâche 3", short:"Expressar um ponto de vista", time:"4 min 30", secs:270, prompt:"« Les réseaux sociaux rapprochent les gens. » Êtes-vous d'accord ? Donnez votre opinion avec des arguments et des exemples.", tips:"<p>Introduza o tema → sua posição → 2 ou 3 argumentos com exemplos pessoais → nuance (certes… mais) → conclusão.</p>" },
+{ exam:"TEF", task:"Section A", short:"Obter informações por telefone", time:"5 min", secs:300, prompt:"Vous avez vu cette annonce : « Cours de cuisine québécoise – le samedi – places limitées. » Vous téléphonez pour obtenir le maximum d'informations (une dizaine de questions).", tips:"<p>Cumprimente, explique por que liga e faça cerca de 10 perguntas: dias, horários, preço, nível, material, número de alunos, localização, inscrição, cancelamento. Agradeça ao final.</p>" },
+{ exam:"TEF", task:"Section B", short:"Convencer um amigo", time:"10 min", secs:600, prompt:"Vous avez lu cette annonce : « Échange linguistique : pratiquez votre français avec des Québécois, deux soirs par semaine, gratuit. » Vous essayez de convaincre un ami hésitant de participer avec vous. Il présente des objections.", tips:"<p>Apresente a proposta → vantagens (prática real, amizades, gratuito, perto) → antecipe objeções (je n'ai pas le temps, j'ai peur de parler) e responda a cada uma → proponha ir juntos na primeira vez.</p>" }
+    ]
+  }
+};
+
+</script>
+<script>
+(() => {
+"use strict";
+const C = window.APP;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rand = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- icons ---------- */
+const I = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>',
+  dumb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  exam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 2h3v16H5V5h3z"/><path d="M9 12l2 2 4-4"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  snail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h13a5 5 0 1 0-5-5v5"/><path d="M11 13a2 2 0 1 0 2-2"/><path d="M3 18l1-6M4 12l-1-2"/></svg>',
+  speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8a5 5 0 0 1 0 8"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  ear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-6 0"/><path d="M10 9a2 2 0 0 1 4 0"/></svg>',
+  cards:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="15" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v13"/></svg>',
+  puzzle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
+  target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg>',
+  flame:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 5 5 10a5 5 0 0 1-10 0c0-2 1-4 2-5 0 2 1 3 2 3 0-3 1-6 1-8z"/></svg>',
+};
+
+/* ---------- content index ---------- */
+const slug = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+const ITEMS = [], BYID = {};
+C.units.forEach((u, ui) => {
+  u.ui = ui; u.items = [];
+  if (u.review) return;
+  const seen = new Set();
+  (u.vocab || []).forEach(v => {
+    let id = u.id + ":w:" + slug(v[0]); if (seen.has(id)) id += "2"; seen.add(id);
+    const it = { id, u: u.id, ui, k: "w", t: v[0], m: v[1], ex: v[2] || "", exm: v[3] || "" };
+    ITEMS.push(it); BYID[id] = it; u.items.push(it);
+  });
+  (u.sentences || []).forEach(s => {
+    let id = u.id + ":s:" + slug(s[0]); if (seen.has(id)) id += "2"; seen.add(id);
+    const it = { id, u: u.id, ui, k: "s", t: s[0], m: s[1] };
+    ITEMS.push(it); BYID[id] = it; u.items.push(it);
+  });
+});
+const UNIT = Object.fromEntries(C.units.map(u => [u.id, u]));
+const LEARN_UNITS = C.units.filter(u => !u.review);
+
+/* ---------- dates ---------- */
+const dkey = (d = new Date()) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const dnum = (d = new Date()) => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
+const today = () => dnum();
+const INTERVALS = [0, 1, 2, 4, 7, 12, 21, 35, 60, 100];
+const MASTER = 4; // box a partir do qual a palavra conta como "consolidada"
+
+/* ---------- state ---------- */
+const LS = C.key + "-v1";
+let S = { profiles: {}, order: [], last: null, deleted: [] };
+let P = null;
+let view = "today", viewArg = null;
+try { const j = JSON.parse(localStorage.getItem(LS) || "null"); if (j && j.profiles) S = Object.assign(S, j); } catch (e) {}
+const COLORS = ["#2747D0", "#0E7C66", "#C2410C", "#9D174D", "#6D28D9", "#0369A1", "#4D7C0F", "#B45309"];
+
+function newProfile(name, color, unit) {
+  return {
+    id: "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), app: C.key, name, color,
+    created: Date.now(), updated: Date.now(),
+    set: { newPerDay: 10, maxRev: 80, unit: unit || 1, speak: true, audio: true, rate: 1, voice: "" },
+    it: {}, days: {}, sk: { r: [0, 0], w: [0, 0], l: [0, 0], f: [0, 0] }, exam: { hist: [] }, cur: null, writes: []
+  };
+}
+function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} }
+function setProfile(id) { P = S.profiles[id] || null; S.last = P ? P.id : null; saveLocal(); updateChip(); }
+
+/* ---------- merge (para vários aparelhos) ---------- */
+function mergeProfiles(a, b) { // retorna mescla; a e b são versões do mesmo perfil
+  if (!a) return b; if (!b) return a;
+  const newer = (b.updated || 0) > (a.updated || 0) ? b : a, older = newer === a ? b : a;
+  const m = JSON.parse(JSON.stringify(newer));
+  for (const [id, st] of Object.entries(older.it || {})) { const x = m.it[id]; if (!x || (st.t || 0) > (x.t || 0)) m.it[id] = st; }
+  for (const [d, v] of Object.entries(older.days || {})) {
+    const x = m.days[d]; if (!x) { m.days[d] = v; continue; }
+    for (const k of Object.keys(v)) if (typeof v[k] === "number") x[k] = Math.max(x[k] || 0, v[k]);
+  }
+  const ids = new Set((m.exam?.hist || []).map(h => h.id));
+  for (const h of (older.exam?.hist || [])) if (!ids.has(h.id)) m.exam.hist.push(h);
+  const wid = new Set((m.writes || []).map(h => h.id));
+  for (const h of (older.writes || [])) if (!wid.has(h.id)) (m.writes = m.writes || []).push(h);
+  if (older.cur && (!m.cur || (older.cur.ts || 0) > (m.cur.ts || 0))) m.cur = older.cur;
+  return m;
+}
+
+/* ---------- cloud sync (db do artifact) ---------- */
+let cloud = null, ownerId = null, sync = "init", dirty = new Set(), saving = false, flushT = null, unsub = null;
+const CL = window.CLOUD || {};
+const FB = !!(CL.firebase && CL.firebase.apiKey && !(window.claude && window.claude.use));
+let fbUser = null, authReady = !FB;
+const SYNC_TXT = { ok: "Progresso salvo na nuvem e sincronizado entre computador e celular.", init: "Conectando à nuvem…", busy: "Salvando…", local: "Progresso salvo só neste aparelho.", signedout: "Você está sem login: o progresso fica só neste aparelho. Entre com Google para sincronizar.", readonly: "Seu acesso não permite salvar na nuvem; o progresso fica neste aparelho.", error: "Sem conexão com a nuvem agora; o progresso está salvo neste aparelho e sobe sozinho quando a conexão voltar." };
+function setSync(s) { sync = s; const el = $("#syncdot"); if (!el) return; el.className = "sync " + ({ ok: "ok", error: "err", busy: "busy", init: "busy" }[s] || ""); el.title = SYNC_TXT[s] || ""; }
+function touch() { if (!P) return; P.updated = Date.now(); saveLocal(); dirty.add(P.id); clearTimeout(flushT); flushT = setTimeout(flush, 1200); }
+async function flush() {
+  if (!cloud || saving || sync === "readonly") return;
+  saving = true; if (sync !== "error") setSync("busy");
+  try {
+    for (const id of [...dirty]) {
+      dirty.delete(id);
+      const p = S.profiles[id];
+      if (!p) { await cloud.ref(id).set({ app: C.key, deleted: true, updated: Date.now() }); continue; }
+      p.owner = ownerId;
+      await cloud.ref(id).set({ app: C.key, updated: p.updated, name: p.name, json: JSON.stringify(p) });
+    }
+    setSync("ok");
+  } catch (e) { const c = e && e.code; setSync(c === "invalid_argument" || c === "permission-denied" ? "readonly" : "error"); }
+  saving = false;
+  if (dirty.size && sync === "ok") flushT = setTimeout(flush, 2500);
+  if (sync === "error") { clearTimeout(flushT); flushT = setTimeout(() => { S.order.forEach(id => dirty.add(id)); flush(); }, 15000); }
+}
+function applyRemote(docs) {
+  let changed = false;
+  for (const d of docs) {
+    const r = d.data(); if (!r || r.app !== C.key) continue;
+    const id = d.id.slice(C.key.length + 1);
+    if (r.deleted) { if (S.profiles[id]) { delete S.profiles[id]; S.order = S.order.filter(x => x !== id); changed = true; } continue; }
+    if (S.deleted.includes(id)) continue;
+    let rp; try { rp = JSON.parse(r.json); } catch (e) { continue; }
+    const lp = S.profiles[id];
+    if (!lp) { S.profiles[id] = rp; S.order.push(id); changed = true; continue; }
+    if ((rp.updated || 0) !== (lp.updated || 0)) {
+      const m = mergeProfiles(lp, rp); S.profiles[id] = m; changed = true;
+      if ((lp.updated || 0) > (rp.updated || 0)) dirty.add(id);
+    }
+  }
+  return changed;
+}
+function subscribe(q) {
+  let first = true;
+  const timer = setTimeout(() => { if (first) setSync("error"); }, 10000);
+  unsub = q.onSnapshot(snap => {
+    if (!snap.metadata.fromCache) { clearTimeout(timer); if (sync !== "readonly") setSync("ok"); }
+    let changed = applyRemote(snap.docs);
+    if (first && !snap.metadata.fromCache) {
+      first = false;
+      const remoteIds = new Set(snap.docs.map(d => d.id.slice(C.key.length + 1)));
+      for (const id of [...S.order]) {
+        if (remoteIds.has(id)) continue;
+        const p = S.profiles[id]; if (!p) continue;
+        if (!p.owner || p.owner === ownerId) dirty.add(id);
+        else { delete S.profiles[id]; S.order = S.order.filter(x => x !== id); changed = true; }
+      }
+    }
+    if (changed) {
+      saveLocal();
+      if (P) P = S.profiles[P.id] || null;
+      if (!P && S.order.length) setProfile(S.last && S.profiles[S.last] ? S.last : S.order[0]);
+      updateChip();
+      if ($("#run").hidden) render();
+    }
+    if (dirty.size) flush();
+  }, err => { clearTimeout(timer); setSync(err && (err.code === "permission-denied" || err.code === "invalid_argument") ? "readonly" : "error"); });
+}
+async function initCloud() {
+  if (window.claude && window.claude.use) {
+    try {
+      const [dbx, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+      if (!dbx || !user) { setSync("local"); return; }
+      const uid = await user.id();
+      if (!uid) { setSync("local"); return; }
+      ownerId = "claude:" + uid;
+      cloud = { ref: id => dbx.doc("data/users/" + uid + "/" + C.key + "-" + id) };
+      subscribe(dbx.collection("data/users/" + uid).where("app", "==", C.key));
+    } catch (e) { setSync("local"); }
+    return;
+  }
+  if (FB && window.firebase) {
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(CL.firebase);
+      const auth = firebase.auth(), fs = firebase.firestore();
+      auth.getRedirectResult().catch(e => { if (e && e.code) toast("Não foi possível entrar: " + e.code); });
+      setTimeout(() => { if (!authReady) { authReady = true; render(); } }, 6000);
+      auth.onAuthStateChanged(u => {
+        authReady = true;
+        if (unsub) { unsub(); unsub = null; }
+        fbUser = u;
+        if (!u) { cloud = null; ownerId = null; setSync("signedout"); render(); return; }
+        ownerId = "g:" + u.uid; S.localOnly = false; saveLocal();
+        const col = fs.collection("users").doc(u.uid).collection("profiles");
+        cloud = { ref: id => col.doc(C.key + "-" + id) };
+        setSync("init");
+        subscribe(col.where("app", "==", C.key));
+        render();
+      });
+    } catch (e) { authReady = true; setSync("local"); render(); }
+    return;
+  }
+  const wasReady = authReady; authReady = true;
+  setSync("local");
+  if (!wasReady) render();
+}
+function loginGoogle() {
+  const prov = new firebase.auth.GoogleAuthProvider();
+  prov.setCustomParameters({ prompt: "select_account" });
+  firebase.auth().signInWithPopup(prov).catch(e => {
+    const c = e && e.code;
+    if (c === "auth/popup-blocked" || c === "auth/operation-not-supported-in-this-environment") firebase.auth().signInWithRedirect(prov);
+    else if (c === "auth/unauthorized-domain") toast("Este endereço não está autorizado no Firebase (veja o LEIA-ME, passo 1).");
+    else if (c && c !== "auth/popup-closed-by-user" && c !== "auth/cancelled-popup-request") toast("Não foi possível entrar: " + c);
+  });
+}
+async function logoutGoogle() {
+  try { clearTimeout(flushT); await flush(); } catch (e) {}
+  await firebase.auth().signOut();
+  for (const id of [...S.order]) if (S.profiles[id] && S.profiles[id].owner) { delete S.profiles[id]; S.order = S.order.filter(x => x !== id); }
+  P = null; S.last = null; saveLocal(); updateChip(); view = "today"; render();
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && dirty.size) flush(); });
+
+/* ---------- voz (TTS) ---------- */
+let VOICES = [], ctts = null, playing = null;
+function loadVoices() { try { VOICES = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith(C.lang.slice(0, 2))); } catch (e) { VOICES = []; } }
+if ("speechSynthesis" in window) { loadVoices(); try { speechSynthesis.onvoiceschanged = loadVoices; } catch (e) {} }
+function bestVoices() {
+  const pref = (P && P.set.voice) || "";
+  const list = VOICES.slice().sort((a, b) => score(b) - score(a));
+  function score(v) { let s = 0; if (v.name === pref) s += 100; if (v.lang.replace("_", "-") === C.lang) s += 10; if (/natural|neural|premium|enhanced|google/i.test(v.name)) s += 5; if (C.voiceHints && C.voiceHints.test(v.name)) s += 3; return s; }
+  return list;
+}
+if (window.claude && window.claude.use) claude.use("tts").then(t => { ctts = t; }).catch(() => {});
+function speak(text, opts = {}) {
+  if (P && !P.set.audio && !opts.force) return Promise.resolve();
+  const rate = (opts.slow ? 0.62 : 0.95) * ((P && P.set.rate) || 1);
+  const vs = bestVoices();
+  if ("speechSynthesis" in window && vs.length) {
+    try {
+      speechSynthesis.cancel();
+      return new Promise(res => {
+        const u = new SpeechSynthesisUtterance(text);
+        u.voice = vs[opts.voiceIdx ? Math.min(opts.voiceIdx, vs.length - 1) : 0]; u.lang = u.voice.lang; u.rate = rate;
+        if (opts.voiceIdx && vs.length < 2) u.pitch = 0.75;
+        u.onend = res; u.onerror = res; speechSynthesis.speak(u);
+        setTimeout(res, 2000 + text.length * 160);
+      });
+    } catch (e) {}
+  }
+  if (ctts) {
+    const voice = opts.voiceIdx ? "rounded" : "buttery";
+    return ctts.speak(text, { language: C.ttsLang, rate: clamp(rate, 0.7, 1.5), voice }).catch(() => {});
+  }
+  if (!speak.warned) { speak.warned = 1; toast("Sem voz em " + C.langName + " neste aparelho. Instale uma voz nas configurações do sistema."); }
+  return Promise.resolve();
+}
+async function speakLines(lines) { // [{v:0|1, t}]
+  for (const l of lines) { await speak(l.t, { voiceIdx: l.v || 0, force: true }); await new Promise(r => setTimeout(r, 250)); }
+}
+
+/* ---------- reconhecimento de fala ---------- */
+let dict = null, micState = "idle", micTarget = null, micText = "", micPartial = "", wsr = null;
+if (window.claude && window.claude.use) claude.use("dictation").then(d => {
+  dict = d; if (!d) return;
+  d.onPartial(e => { micPartial = e.text; micTarget && micTarget(micText + " " + micPartial, false); });
+  d.onFinal(e => { micText += e.text; micPartial = ""; micTarget && micTarget(micText, false); });
+  d.onState(e => { micState = e.state; if (e.state === "idle") { micTarget && micTarget(micText, true, e.reason); } updMic(); });
+}).catch(() => {});
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function canListen() { return !!dict || !!SR; }
+function micStart(cb) { // chamado direto no clique
+  micText = ""; micPartial = ""; micTarget = cb;
+  if (dict) {
+    dict.start({ language: C.dictLang }).catch(e => {
+      if (e && e.code === "unavailable") dict.start().catch(() => {});
+      else { micState = "idle"; updMic(); cb(micText, true, e && e.code); }
+    });
+    return;
+  }
+  if (SR) {
+    try {
+      wsr = new SR(); wsr.lang = C.lang; wsr.interimResults = true; wsr.continuous = false;
+      wsr.onresult = ev => { let f = "", p = ""; for (const r of ev.results) (r.isFinal ? (f += r[0].transcript) : (p += r[0].transcript)); micText = f; cb(f + " " + p, false); };
+      wsr.onend = () => { micState = "idle"; updMic(); cb(micText, true); };
+      wsr.onerror = e => { micState = "idle"; updMic(); cb(micText, true, e.error); };
+      wsr.start(); micState = "listening"; updMic();
+    } catch (e) { cb("", true, "unavailable"); }
+  }
+}
+function micStop() { if (dict && dict.active()) return dict.stop(); if (wsr) try { wsr.stop(); } catch (e) {} }
+function updMic() { const b = $("#micbtn"); if (b) { const on = micState !== "idle"; b.classList.toggle("on", on); b.setAttribute("aria-label", on ? "Parar" : "Falar"); const l = $("#miclbl"); if (l) l.textContent = on ? "Ouvindo… toque para parar" : "Toque e fale"; } }
+
+/* ---------- Claude (correções) ---------- */
+let sampleFn = null;
+if (window.claude && window.claude.use) claude.use("sample").then(s => { sampleFn = s; }).catch(() => {});
+function aiAvailable() { return !!sampleFn || !!(CL.aiProxy && fbUser); }
+function parseLoose(t) {
+  try { return JSON.parse(t); } catch (e) {}
+  const f = /```(?:json)?\s*([\s\S]*?)```/.exec(t); if (f) { try { return JSON.parse(f[1]); } catch (e) {} }
+  const a = t.indexOf("{"), b = t.lastIndexOf("}"); if (a >= 0 && b > a) return JSON.parse(t.slice(a, b + 1));
+  throw { code: "invalid_json" };
+}
+async function aiJson(prompt) {
+  if (sampleFn) return sampleFn.json(prompt, { modelTier: "default", cache: false });
+  if (CL.aiProxy && fbUser) {
+    const idToken = await fbUser.getIdToken();
+    const r = await fetch(CL.aiProxy, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ idToken, prompt, app: C.key }) });
+    const j = await r.json();
+    if (j.error) throw { code: j.error, message: j.message || j.error };
+    return parseLoose(j.text || "");
+  }
+  throw { code: "unavailable" };
+}
+function aiErr(e) {
+  return ({ not_granted: "A permissão para usar o Claude foi negada nesta página.", not_allowed: "Seu e-mail ainda não foi liberado para correções. Peça para a administradora liberar.", limit: "Limite diário de correções atingido. Volte amanhã.", unauthorized: "Sua sessão expirou. Saia e entre de novo.", unavailable: "Correção indisponível aqui: entre com Google (versão GitHub) ou abra pelo link do Claude.", no_key: "As correções ainda não foram configuradas (falta a chave no Apps Script).", rate_limited: "Muitas correções seguidas. Espere um pouco e tente de novo.", quota: "A cota gratuita de correções de hoje acabou. Volte amanhã.", api: "O serviço de IA recusou o pedido agora. Tente de novo mais tarde." })[e && e.code] || "Não consegui corrigir agora. Tente de novo em instantes.";
+}
+const AI_OFF_MSG = () => FB ? (fbUser ? "As correções com IA ainda não foram configuradas nesta versão (veja o LEIA-ME, passo 3)." : "Entre com Google para usar a correção com IA.") : "A correção com IA funciona quando a página é aberta pelo link do Claude, com sua conta.";
+
+/* ---------- comparação de respostas ---------- */
+const CONTR = C.contractions || {};
+function norm(s, keepAccents = true) {
+  s = String(s).toLowerCase().replace(/[’`´]/g, "'").replace(/[«»"“”.,!?¿¡;:()\[\]…]/g, " ").replace(/\s*-\s*/g, "-").replace(/'\s+/g, "'");
+  for (const [a, b] of Object.entries(CONTR)) s = s.replace(new RegExp("\\b" + a.replace(/'/g, "'") + "(?![\\w'])", "g"), b);
+  if (!keepAccents) s = s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return s.replace(/\s+/g, " ").trim();
+}
+function lev(a, b) { const m = a.length, n = b.length; if (!m) return n; if (!n) return m; let p = Array.from({ length: n + 1 }, (_, j) => j); for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[n]; }
+function variants(t) { // "Hello / Hi" -> ["Hello","Hi"]; remove notas entre parênteses
+  return t.split(/\s\/\s|\s*\/\s*(?=[A-Za-zÀ-ÿ])/).map(x => x.replace(/\(.*?\)/g, "").trim()).filter(Boolean);
+}
+function check(ans, it, extraAccepted = []) {
+  const targets = [...variants(it.t), ...extraAccepted];
+  const a = norm(ans);
+  if (!a) return { ok: false, level: "bad" };
+  for (const t of targets) if (norm(t) === a) return { ok: true, level: "ok" };
+  for (const t of targets) if (norm(t, false) === norm(ans, false)) return { ok: true, level: "accent", t };
+  if (C.articles) { const re = new RegExp("^(" + C.articles.join("|") + ")\\s*", "i"); for (const t of targets) { const bare = norm(t, false).replace(re, ""); if (bare !== norm(t, false) && bare === norm(ans, false).replace(re, "")) return { ok: true, level: "article", t }; } }
+  for (const t of targets) { const nt = norm(t, false), na = norm(ans, false); const tol = nt.length <= 4 ? 0 : nt.length <= 10 ? 1 : Math.floor(nt.length / 10) + 1; if (lev(nt, na) <= tol) return { ok: true, level: "typo", t }; }
+  return { ok: false, level: "bad" };
+}
+function wordsOf(s) { return norm(s, false).split(" ").filter(Boolean); }
+function speechScore(said, target) {
+  const t = wordsOf(target), s = wordsOf(said); const used = new Array(s.length).fill(false);
+  const marks = t.map(w => { for (let i = 0; i < s.length; i++) if (!used[i] && (s[i] === w || (w.length > 4 && lev(s[i], w) <= 1))) { used[i] = true; return true; } return false; });
+  return { score: t.length ? marks.filter(Boolean).length / t.length : 0, marks, words: target.split(/\s+/) };
+}
+
+/* ---------- SRS ---------- */
+function st(id) { return P.it[id]; }
+function seen(id) { const s = P.it[id]; return s && s.b > 0; }
+function dayRec(k = dkey()) { return (P.days[k] = P.days[k] || { n: 0, r: 0, c: 0, w: 0, s: 0, done: 0 }); }
+function grade(it, ok, mode) {
+  const t = today(); let s = P.it[it.id];
+  if (!s) s = P.it[it.id] = { b: 0, d: t, r: 0, l: 0, t: 0 };
+  const wasNew = s.b === 0;
+  if (mode === "learn" || mode === "retry" || mode === "practice" && !wasNew) {
+    if (!ok) { if (mode === "practice") { s.d = t; s.b = Math.max(1, s.b - 1); s.l++; } else s.d = Math.min(s.d, t + 1); }
+  } else if (ok) {
+    s.b = Math.min(s.b + 1, INTERVALS.length - 1); s.d = t + INTERVALS[s.b];
+    if (wasNew) dayRec().n++; else dayRec().r++;
+  } else {
+    s.l++; s.b = Math.max(1, s.b - 2); s.d = t + 1; if (wasNew) dayRec().n++; else dayRec().r++;
+  }
+  s.r++; s.t = Date.now();
+  const d = dayRec(); ok ? d.c++ : d.w++;
+}
+function skill(ex, ok) { const k = { mc: "r", listen: "l", dict: "l", tiles_listen: "l", type: "w", type_hint: "w", tiles_pt: "w", speak: "f", flash: "r" }[ex]; if (!k) return; P.sk[k][1]++; if (ok) P.sk[k][0]++; }
+function unlockedIdx() { const u = LEARN_UNITS.find(x => x.n === P.set.unit) || LEARN_UNITS[0]; let idx = u.ui; return idx; }
+function dueItems() { const t = today(); return ITEMS.filter(it => { const s = P.it[it.id]; return s && s.b > 0 && s.d <= t; }).sort((a, b) => P.it[a.id].d - P.it[b.id].d || a.ui - b.ui); }
+function nextNew(n) { const lim = unlockedIdx(); const out = []; for (const it of ITEMS) { if (it.ui > lim) break; if (!seen(it.id)) out.push(it); if (out.length >= n) break; } return out; }
+function newLeftToday() { return Math.max(0, P.set.newPerDay - (dayRec().n || 0)); }
+function unitStats(u) { const n = u.items.length; let seenN = 0, m = 0; for (const it of u.items) { const s = P.it[it.id]; if (s && s.b > 0) { seenN++; if (s.b >= MASTER) m++; } } return { n, seen: seenN, master: m }; }
+function totals() { let seenN = 0, m = 0; for (const it of ITEMS) { const s = P.it[it.id]; if (s && s.b > 0) { seenN++; if (s.b >= MASTER) m++; } } return { seen: seenN, master: m, all: ITEMS.length }; }
+function streak() { let n = 0; const d = new Date(); const rec = k => P.days[k] && (P.days[k].c + P.days[k].w) >= 10; if (!rec(dkey(d))) d.setDate(d.getDate() - 1); while (rec(dkey(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
+
+/* ---------- escolha de exercício ---------- */
+function exFor(it, mode) {
+  const b = (P.it[it.id] && P.it[it.id].b) || 0;
+  const audio = P.set.audio, sp = P.set.speak && canListen() || P.set.speak;
+  let opts;
+  if (mode === "learn") opts = it.k === "w" ? ["type_hint"] : ["tiles_pt"];
+  else if (mode === "retry") opts = it.k === "w" ? ["mc"] : [audio ? "tiles_listen" : "tiles_pt"];
+  else if (it.k === "w") {
+    if (b <= 1) opts = ["mc", "listen"]; else if (b === 2) opts = ["type_hint", "listen"]; else if (b === 3) opts = ["dict", "type_hint", "speak"]; else opts = ["type", "dict", "speak", "type"];
+  } else {
+    if (b <= 1) opts = ["tiles_listen", "mc"]; else if (b === 2) opts = ["tiles_pt", "tiles_listen"]; else if (b === 3) opts = ["dict", "speak", "tiles_pt"]; else opts = ["type", "dict", "speak"];
+  }
+  opts = opts.filter(o => (audio || !["listen", "dict", "tiles_listen"].includes(o)) && (sp || o !== "speak"));
+  if (!opts.length) opts = it.k === "w" ? ["mc", "type_hint"] : ["tiles_pt", "type"];
+  return rand(opts);
+}
+
+/* ---------- sessão do dia ---------- */
+const SEC_REV = 12, SEC_NEW = 35;
+function plan() {
+  const due = dueItems().slice(0, P.set.maxRev), avail = nextNew(newLeftToday());
+  const min = P.set.minutes || 0;
+  if (!min) return { reviews: due, news: avail, dueAll: dueItems().length };
+  const budget = min * 60;
+  let r = Math.min(due.length, Math.floor(budget * 0.7 / SEC_REV));
+  let n = Math.min(avail.length, Math.floor((budget - r * SEC_REV) / SEC_NEW));
+  r = Math.min(due.length, r + Math.floor((budget - r * SEC_REV - n * SEC_NEW) / SEC_REV));
+  return { reviews: due.slice(0, r), news: avail.slice(0, n), dueAll: dueItems().length };
+}
+function buildSession() {
+  const pl = plan(); const reviews = pl.reviews, news = pl.news;
+  const q = []; let ri = 0;
+  for (let i = 0; i < news.length; i += 3) {
+    const grp = news.slice(i, i + 3);
+    for (const it of grp) { q.push({ id: it.id, ex: "intro", mode: "new" }); q.push({ id: it.id, ex: it.k === "w" ? "mc" : (P.set.audio ? "tiles_listen" : "mc"), mode: "new" }); }
+    for (let k = 0; k < 4 && ri < reviews.length; k++, ri++) q.push({ id: reviews[ri].id, ex: exFor(reviews[ri], "rev"), mode: "rev" });
+    for (const it of shuffle(grp)) q.push({ id: it.id, ex: exFor(it, "learn"), mode: "learn" });
+  }
+  for (; ri < reviews.length; ri++) q.push({ id: reviews[ri].id, ex: exFor(reviews[ri], "rev"), mode: "rev" });
+  return q;
+}
+function practiceQueue(items, exType, n = 15) {
+  const pick = shuffle(items).slice(0, n);
+  const q = [];
+  for (const it of pick) {
+    if (!seen(it.id)) q.push({ id: it.id, ex: "intro", mode: "new" });
+    let ex = exType === "mix" ? exFor(it, "rev") : exType;
+    if (ex === "tiles" ) ex = it.k === "s" ? (P.set.audio ? "tiles_listen" : "tiles_pt") : "type_hint";
+    q.push({ id: it.id, ex, mode: seen(it.id) ? "practice" : "new" });
+  }
+  return q;
+}
+
+/* ---------- runner ---------- */
+let R = null; // {q, pos, kind:'daily'|'practice', results:[], started, title}
+function startRun(q, kind, title) {
+  if (!q.length) { toast(kind === "daily" ? "Nada pendente hoje. Volte amanhã ou faça um treino livre." : "Sem itens para treinar aqui ainda."); return; }
+  R = { q, pos: 0, kind, title, res: [], started: Date.now(), wrong: new Set(), ans: null };
+  if (kind === "daily") { P.cur = { day: dkey(), q, pos: 0, ts: Date.now(), res: [] }; touch(); }
+  $("#run").hidden = false; document.body.style.overflow = "hidden";
+  showEx();
+}
+function resumeRun() { const c = P.cur; R = { q: c.q, pos: c.pos, kind: "daily", title: "Sessão do dia", res: c.res || [], started: Date.now(), wrong: new Set(), ans: null }; $("#run").hidden = false; document.body.style.overflow = "hidden"; showEx(); }
+function closeRun(done) {
+  try { speechSynthesis.cancel(); } catch (e) {}
+  micStop();
+  if (R && R.kind === "daily" && P.cur) { P.cur.pos = R.pos; P.cur.res = R.res; P.cur.ts = Date.now(); if (done) P.cur = null; }
+  if (R) { const secs = Math.round((Date.now() - R.started) / 1000); dayRec().s += Math.min(secs, 3600); if (done && R.kind === "daily") dayRec().done = 1; }
+  touch(); flush();
+  R = null; $("#run").hidden = true; $("#run").innerHTML = ""; document.body.style.overflow = ""; render();
+}
+const EXNAME = { intro: "Novo", mc: "Leitura", listen: "Audição", type_hint: "Escrita", type: "Escrita", dict: "Ditado", tiles_listen: "Audição", tiles_pt: "Escrita", speak: "Fala", flash: "Flashcard" };
+const EXHELP = { mc: "O que significa?", listen: "Ouça e escolha o significado", type_hint: "Escreva em " + C.langName.toLowerCase(), type: "Escreva em " + C.langName.toLowerCase(), dict: "Ouça e escreva o que ouviu", tiles_listen: "Ouça e monte a frase", tiles_pt: "Monte a frase em " + C.langName.toLowerCase(), speak: "Leia em voz alta", intro: "" };
+function runTop() {
+  const pct = R.q.length ? Math.round(R.pos / R.q.length * 100) : 0;
+  return `<div class="rtop"><button class="icon-btn" data-act="run-close" aria-label="Sair (o progresso fica salvo)">${I.x}</button><div class="bar"><i style="width:${pct}%"></i></div><span class="num small muted">${R.pos}/${R.q.length}</span></div>`;
+}
+function distractors(it, n, field) {
+  const pool = ITEMS.filter(x => x.k === it.k && x.id !== it.id && x[field] !== it[field] && Math.abs(x.ui - it.ui) <= 3);
+  const near = shuffle(pool.filter(x => x.u === it.u)), far = shuffle(pool.filter(x => x.u !== it.u));
+  const out = []; const used = new Set([norm(it[field])]);
+  for (const x of [...near, ...far]) { const k = norm(x[field]); if (used.has(k)) continue; used.add(k); out.push(x); if (out.length >= n) break; }
+  return out;
+}
+function showEx() {
+  if (!R) return;
+  if (R.pos >= R.q.length) return showSummary();
+  const e = R.q[R.pos], it = BYID[e.id];
+  if (!it) { R.pos++; return showEx(); }
+  R.ans = null; R.cur = e; R.tiles = null; R.lastAns = null;
+  const isS = it.k === "s";
+  const un = UNIT[it.u];
+  const head = `<div class="kind"><span class="tag">${esc(EXNAME[e.ex] || "")}</span><span>${esc(un.short || un.title)}</span>${e.mode === "retry" ? '<span class="pill bad">revendo erro</span>' : ""}</div>`;
+  let body = "", foot = "";
+  const playBtns = (big) => `<div class="audio-big"><button class="play ${big ? "" : "sm"}" data-act="say" aria-label="Ouvir">${I.play}</button><button class="icon-btn" data-act="say-slow" aria-label="Ouvir devagar" title="Ouvir devagar">${I.snail}</button></div>`;
+  switch (e.ex) {
+    case "intro":
+      body = `${head}<div class="eyebrow">${isS ? "Frase nova" : "Palavra nova"}</div>
+        <div class="row"><div class="prompt ${isS ? "s" : ""} grow"><span class="mk">${esc(it.t)}</span></div></div>
+        <div class="sub">${esc(it.m)}</div>${playBtns(false)}
+        ${it.ex ? `<div class="card small"><div class="eyebrow">Exemplo</div><div style="font-weight:600">${esc(it.ex)}</div><div class="muted">${esc(it.exm)}</div><button class="btn sm ghost" data-act="say-text" data-t="${esc(it.ex)}">${I.speaker} Ouvir exemplo</button></div>` : ""}
+        <div class="small muted">Dica: repita em voz alta 2 vezes antes de continuar.</div>`;
+      foot = `<button class="btn pri wide" data-act="next">Continuar <span class="kbd hide-sm">Enter</span></button>`;
+      setTimeout(() => speak(it.t), 250);
+      break;
+    case "mc": case "listen": {
+      const ds = distractors(it, 3, "m");
+      const opts = shuffle([it, ...ds]);
+      R.opts = opts;
+      body = `${head}<div class="small muted">${EXHELP[e.ex]}</div>` +
+        (e.ex === "mc" ? `<div class="row"><div class="prompt ${isS ? "s" : ""} grow">${esc(it.t)}</div><button class="icon-btn" data-act="say" aria-label="Ouvir">${I.speaker}</button></div>` : playBtns(true)) +
+        `<div class="opts">${opts.map((o, i) => `<button class="opt" data-act="pick" data-i="${i}"><span class="k">${i + 1}</span><span>${esc(o.m)}</span></button>`).join("")}</div>`;
+      if (e.ex === "listen") setTimeout(() => speak(it.t), 250);
+      break;
+    }
+    case "type_hint": case "type": case "dict": {
+      const v = variants(it.t)[0];
+      const hint = e.ex === "type_hint" ? v.split(" ").map(w => w.split("").map((ch, i) => i === 0 || /[^\p{L}]/u.test(ch) ? ch : "_").join("")).join("  ") : "";
+      body = `${head}<div class="small muted">${EXHELP[e.ex]}</div>` +
+        (e.ex === "dict" ? playBtns(true) : `<div class="prompt ${isS ? "s" : ""}">${esc(it.m)}</div>`) +
+        (hint ? `<div class="hint">${esc(hint)}</div>` : "") +
+        `<input class="inp" id="ansinp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Digite em ${esc(C.langName.toLowerCase())}…" aria-label="Resposta">` +
+        (C.specialChars ? `<div class="tiles">${C.specialChars.map(c => `<button class="tile" data-act="ins" data-c="${c}">${c}</button>`).join("")}</div>` : "");
+      foot = `<button class="btn pri wide" data-act="check">Verificar <span class="kbd hide-sm">Enter</span></button>`;
+      if (e.ex === "dict") setTimeout(() => speak(it.t), 250);
+      setTimeout(() => { const i = $("#ansinp"); i && i.focus(); }, 60);
+      break;
+    }
+    case "tiles_listen": case "tiles_pt": {
+      const words = it.t.replace(/([.,!?;:»«])/g, " $1 ").split(/\s+/).filter(w => w && !/^[.,!?;:»«—–-]$/.test(w));
+      if (words.length && !/^(I|I'.*)$/.test(words[0]) && !(C.keepCase || []).includes(words[0])) words[0] = words[0][0].toLowerCase() + words[0].slice(1);
+      const extra = shuffle(ITEMS.filter(x => x.u === it.u && x.k === "w" && !x.t.includes(" ")).map(x => x.t.toLowerCase())).filter(w => !words.map(x => x.toLowerCase()).includes(w)).slice(0, Math.min(3, Math.max(1, Math.floor(words.length / 3))));
+      R.tiles = { all: shuffle([...words, ...extra]).map((w, i) => ({ w, i })), picked: [] };
+      body = `${head}<div class="small muted">${EXHELP[e.ex]}</div>` +
+        (e.ex === "tiles_listen" ? playBtns(true) : `<div class="prompt s">${esc(it.m)}</div>`) +
+        `<div class="answer-zone" id="zone"></div><div class="tiles" id="pool"></div>`;
+      foot = `<button class="btn pri wide" data-act="check">Verificar <span class="kbd hide-sm">Enter</span></button>`;
+      if (e.ex === "tiles_listen") setTimeout(() => speak(it.t), 250);
+      break;
+    }
+    case "speak":
+      body = `${head}<div class="small muted">${EXHELP.speak} — ouça o modelo e depois fale.</div>
+        <div class="row"><div class="prompt ${isS ? "s" : ""} grow">${esc(it.t)}</div></div><div class="sub">${esc(it.m)}</div>${playBtns(false)}
+        <div class="stack" style="align-items:center;margin-top:8px">${canListen() ? `<button class="mic" id="micbtn" data-act="mic" aria-label="Falar">${I.mic}</button><div id="miclbl" class="small muted">Toque e fale</div>` : `<div class="card small">Repita em voz alta 3 vezes, imitando o áudio. Depois avalie com sinceridade.</div>`}<div class="said" id="said"></div></div>`;
+      foot = canListen() ? `<div class="row"><button class="btn ghost grow" data-act="self-bad">Não consegui</button><button class="btn grow" data-act="self-ok">Falei bem</button></div>` : `<div class="row"><button class="btn grow" data-act="self-bad">Preciso treinar</button><button class="btn pri grow" data-act="self-ok">Falei bem</button></div>`;
+      setTimeout(() => speak(it.t), 250);
+      break;
+  }
+  $("#run").innerHTML = runTop() + `<div class="rbody">${body}</div><div class="rfoot" id="rfoot">${foot}</div>`;
+  if (R.tiles) drawTiles();
+}
+function drawTiles() {
+  const z = $("#zone"), p = $("#pool"); if (!z) return;
+  z.innerHTML = R.tiles.picked.map((t, k) => `<button class="tile" data-act="untile" data-k="${k}">${esc(t.w)}</button>`).join("");
+  p.innerHTML = R.tiles.all.map(t => `<button class="tile ${R.tiles.picked.includes(t) ? "used" : ""}" data-act="tile" data-i="${t.i}">${esc(t.w)}</button>`).join("");
+}
+function lcsAlign(a, b, eq) {
+  const m = a.length, n = b.length; const L = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) L[i][j] = eq(a[i], b[j]) ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const ma = new Array(m).fill(false), mb = new Array(n).fill(false); let i = 0, j = 0;
+  while (i < m && j < n) { if (eq(a[i], b[j])) { ma[i] = mb[j] = true; i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++; }
+  return [ma, mb];
+}
+function diffHTML(ans, target) {
+  const tw = target.split(/\s+/).filter(Boolean), aw = String(ans).trim().split(/\s+/).filter(Boolean);
+  let you, right;
+  if (tw.length === 1 && aw.length <= 2) {
+    const a = [...aw.join(" ")], t = [...tw[0]];
+    const [ma, mt] = lcsAlign(a, t, (x, y) => x.toLowerCase() === y.toLowerCase());
+    you = a.map((c, i) => ma[i] ? esc(c) : `<del>${esc(c)}</del>`).join("");
+    right = t.map((c, i) => mt[i] ? esc(c) : `<ins>${esc(c)}</ins>`).join("");
+  } else {
+    const k = w => norm(w, false);
+    const [ma, mt] = lcsAlign(aw, tw, (x, y) => k(x) !== "" && k(x) === k(y));
+    you = aw.map((w, i) => ma[i] ? esc(w) : `<del>${esc(w)}</del>`).join(" ");
+    right = tw.map((w, i) => mt[i] ? esc(w) : `<ins>${esc(w)}</ins>`).join(" ");
+  }
+  return `<div class="diff"><div><span class="lbl">Você</span>${you || "<del>(vazio)</del>"}</div><div><span class="lbl">Certo</span>${right}</div></div>`;
+}
+function feedback(ok, level, it, extra = "") {
+  const e = R.cur; R.ans = { ok };
+  R.snap = { st: P.it[it.id] ? JSON.parse(JSON.stringify(P.it[it.id])) : null, dc: Object.assign({}, dayRec()), pos: R.pos };
+  if (e.ex !== "intro") {
+    grade(it, ok, e.mode); skill(e.ex, ok);
+    R.res.push({ id: it.id, ok, ex: e.ex });
+    if (!ok) { R.wrong.add(it.id); const back = Math.min(R.q.length, R.pos + 4); R.q.splice(back, 0, { id: it.id, ex: exFor(it, "retry"), mode: "retry" }); }
+  }
+  if (R.kind === "daily" && P.cur) { P.cur.q = R.q; P.cur.pos = R.pos + 1; P.cur.res = R.res; P.cur.ts = Date.now(); }
+  touch();
+  const cls = ok ? (level === "ok" ? "ok" : "warn") : "bad";
+  const title = ok ? (level === "accent" ? "Certo — atenção aos acentos" : level === "article" ? "Certo — atenção ao artigo (gênero)" : level === "typo" ? "Quase perfeito — confira a grafia" : rand(["Isso!", "Muito bem!", "Correto!", "Perfeito!"])) : "Resposta correta:";
+  const foot = $("#rfoot");
+  foot.outerHTML = `<div class="fb ${cls}"><div class="rfoot"><h3>${title}</h3>${(!ok || level !== "ok") ? `<div style="font-weight:700;font-size:18px">${esc(it.t)}</div>` : ""}<div class="small">${esc(it.m)}</div>${extra}${R.lastAns != null && (!ok || level !== "ok") && aiAvailable() ? `<div class="stack" style="gap:8px"><button class="btn sm" style="align-self:flex-start" data-act="why">${I.spark} Por que errei?</button><div id="why"></div></div>` : ""}<div class="row"><button class="icon-btn" data-act="say" aria-label="Ouvir">${I.speaker}</button><button class="btn pri grow" data-act="next" id="nextbtn">Continuar <span class="kbd hide-sm">Enter</span></button></div></div></div>`;
+  if (!ok || e.ex === "mc") speak(it.t);
+  setTimeout(() => { const b = $("#nextbtn"); b && b.focus(); }, 40);
+}
+function doCheck() {
+  const e = R.cur, it = BYID[e.id];
+  if (R.ans) return;
+  if (e.ex.startsWith("tiles")) {
+    const ans = R.tiles.picked.map(t => t.w).join(" ");
+    if (!ans) return;
+    const r = check(ans, it); R.lastAns = ans;
+    return feedback(r.ok, r.level, it, r.ok && r.level === "ok" ? "" : diffHTML(ans, r.t || variants(it.t)[0]));
+  }
+  const inp = $("#ansinp"); if (!inp) return;
+  const v = inp.value.trim(); if (!v) { inp.focus(); return; }
+  inp.disabled = true;
+  let extraAcc = [];
+  if (e.ex === "type" || e.ex === "type_hint") extraAcc = ITEMS.filter(x => x.k === it.k && x.m === it.m && x.id !== it.id).map(x => x.t);
+  const r = check(v, it, extraAcc); R.lastAns = v;
+  feedback(r.ok, r.level, it, r.ok && r.level === "ok" ? "" : diffHTML(v, r.t || variants(it.t)[0]));
+}
+function showSummary() {
+  const n = R.res.length, c = R.res.filter(r => r.ok).length;
+  const wrongIds = [...R.wrong];
+  const st = streak();
+  if (R.kind === "daily") { dayRec().done = 1; P.cur = null; touch(); }
+  $("#run").innerHTML = `<div class="rtop"><button class="icon-btn" data-act="run-done" aria-label="Fechar">${I.x}</button><div class="bar ok"><i style="width:100%"></i></div></div>
+  <div class="rbody"><div class="eyebrow">${esc(R.title || "Treino")} concluído</div><h1 style="font-size:30px">${c === n ? "Sem erros. Excelente!" : c / Math.max(1, n) >= .8 ? "Ótimo trabalho!" : "Treino feito — a repetição é que fixa."}</h1>
+  <div class="stats"><div class="stat"><b>${n ? Math.round(c / n * 100) : 0}%</b><span>acertos</span></div><div class="stat"><b>${c}/${n}</b><span>respostas</span></div><div class="stat"><b>${Math.max(1, Math.round((Date.now() - R.started) / 60000))} min</b><span>tempo</span></div><div class="stat"><b>${st}</b><span>dias seguidos</span></div></div>
+  ${wrongIds.length ? `<div class="card"><div class="eyebrow">Para reforçar (voltam amanhã)</div><div class="list">${wrongIds.map(id => BYID[id]).map(it => `<div class="li"><button class="icon-btn" data-act="say-text" data-t="${esc(it.t)}">${I.speaker}</button><div class="grow"><div class="en">${esc(it.t)}</div><div class="small muted">${esc(it.m)}</div></div></div>`).join("")}</div></div>` : ""}
+  <div class="small muted">O app agenda automaticamente cada palavra para a próxima revisão (1, 2, 4, 7, 12 dias…). É esse espaçamento que leva o vocabulário para a memória de longo prazo.</div></div>
+  <div class="rfoot"><button class="btn pri wide" data-act="run-done">Concluir</button></div>`;
+}
+
+/* flashcards */
+function startFlash(items) {
+  if (!items.length) return toast("Nada para revisar aqui ainda.");
+  R = { q: shuffle(items).slice(0, 25).map(it => ({ id: it.id, ex: "flash", mode: seen(it.id) ? "practice" : "new" })), pos: 0, kind: "flash", title: "Flashcards", res: [], started: Date.now(), wrong: new Set(), flip: false, dir: "en" };
+  $("#run").hidden = false; document.body.style.overflow = "hidden"; showFlash();
+}
+function showFlash() {
+  if (R.pos >= R.q.length) return showSummary();
+  const it = BYID[R.q[R.pos].id];
+  R.cur = R.q[R.pos];
+  const front = R.dir === "en" ? `<div class="prompt ${it.k === "s" ? "s" : ""}">${esc(it.t)}</div>` : `<div class="prompt s">${esc(it.m)}</div>`;
+  const back = `<div class="prompt ${it.k === "s" ? "s" : ""}"><span class="mk">${esc(it.t)}</span></div><div class="sub">${esc(it.m)}</div>${it.ex ? `<div class="small muted">${esc(it.ex)}</div>` : ""}`;
+  $("#run").innerHTML = runTop() + `<div class="rbody"><div class="row"><div class="seg" style="flex:none"><button data-act="fdir" data-d="en" aria-pressed="${R.dir === "en"}">${esc(C.langName)} → PT</button><button data-act="fdir" data-d="pt" aria-pressed="${R.dir === "pt"}">PT → ${esc(C.langName)}</button></div></div>
+  <div class="flash" data-act="flip">${R.flip ? back : front}<div class="small muted">${R.flip ? "" : "Pense na resposta e toque para virar"}</div></div>
+  <div class="row" style="justify-content:center"><button class="icon-btn" data-act="say" aria-label="Ouvir">${I.speaker}</button></div></div>
+  <div class="rfoot">${R.flip ? `<div class="row"><button class="btn grow" data-act="fl-bad">Errei</button><button class="btn pri grow" data-act="fl-ok">Acertei</button></div>` : `<button class="btn pri wide" data-act="flip">Virar <span class="kbd hide-sm">Espaço</span></button>`}</div>`;
+  if (R.dir === "en" && !R.flip) speak(it.t);
+}
+
+/* ---------- UI helpers ---------- */
+let toastT;
+function toast(msg) { let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); } t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3200); }
+function updateChip() { const n = $("#chipnm"), a = $("#chipav"); if (!P) { n.textContent = "Perfil"; a.style.background = "var(--muted)"; a.textContent = "?"; return; } n.textContent = P.name; a.textContent = P.name.trim()[0]?.toUpperCase() || "?"; a.style.background = P.color; }
+function bar(p, cls = "") { return `<div class="bar ${cls}"><i style="width:${clamp(Math.round(p * 100), 0, 100)}%"></i></div>`; }
+function openSheet(html) { const s = $("#sheet"); s.innerHTML = `<div class="sheet" data-act="sheet-bg"><div class="panel" role="dialog" aria-modal="true">${html}</div></div>`; s.hidden = false; }
+function closeSheet() { const s = $("#sheet"); s.hidden = true; s.innerHTML = ""; }
+
+/* ---------- tabs ---------- */
+const TABS = [["today", "Hoje", I.home], ["units", C.unitWord + "s", I.book], ["train", "Treino", I.dumb], ...(C.exam ? [["exam", "Provas", I.exam]] : []), ["progress", "Progresso", I.chart]];
+function drawTabs() { $("#tabs .in").innerHTML = TABS.map(([k, l, ic]) => `<button data-act="tab" data-v="${k}" ${view === k || (view === "unit" && k === "units") || (view.startsWith("exam") && k === "exam") ? 'aria-current="page"' : ""}>${ic}<span>${l}</span></button>`).join(""); }
+
+/* ---------- views ---------- */
+function render() {
+  drawTabs();
+  const m = $("#main");
+  if (!authReady) { m.innerHTML = `<div class="empty">Carregando…</div>`; return; }
+  if (FB && !fbUser && !S.localOnly) { m.innerHTML = loginScreen(); return; }
+  if (!P) { m.innerHTML = welcome(); return; }
+  const fn = { today: vToday, units: vUnits, unit: vUnit, train: vTrain, progress: vProgress, exam: vExam, examsec: vExamSec, write: vWrite }[view] || vToday;
+  m.innerHTML = fn();
+  window.scrollTo(0, 0);
+}
+const GICON = '<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>';
+function loginScreen() {
+  return `<div class="stack" style="padding-top:20px"><div class="eyebrow">${esc(C.tagline)}</div><h1 style="font-size:34px">${esc(C.welcomeTitle)}</h1><p class="muted">${esc(C.welcomeText)}</p>
+  <button class="btn pri" data-act="login" style="gap:10px"><span style="background:#fff;border-radius:50%;width:26px;height:26px;display:grid;place-items:center">${GICON}</span>Entrar com Google</button>
+  <div class="card small stack" style="gap:6px"><b>Por que entrar?</b><span class="muted">Cada pessoa usa a própria conta Google. O progresso fica salvo na nuvem e aparece igual no computador e no celular: é só entrar com a mesma conta nos dois. Quem divide a mesma conta pode criar um perfil para cada pessoa.</span></div>
+  <button class="btn ghost sm" style="align-self:center" data-act="local-only">Usar sem login (salva só neste aparelho)</button></div>`;
+}
+function accountCard() {
+  if (!FB) return "";
+  if (fbUser) return `<div class="card row"><span class="grow small">Conectada como <b>${esc(fbUser.email || fbUser.displayName || "")}</b></span><button class="btn sm" data-act="logout">Sair</button></div>`;
+  return `<div class="card stack" style="gap:8px"><span class="small"><b>Sem login:</b> o progresso está só neste aparelho.</span><button class="btn pri sm" style="align-self:flex-start" data-act="login">Entrar com Google para sincronizar</button></div>`;
+}
+function welcome() {
+  return `<div class="stack" style="padding-top:20px"><div class="eyebrow">${esc(C.tagline)}</div><h1 style="font-size:34px">${esc(C.welcomeTitle)}</h1><p class="muted">${esc(C.welcomeText)}</p>
+  ${S.order.length ? `<div class="stack">${S.order.map(id => S.profiles[id]).filter(Boolean).map(p => `<button class="prof" data-act="pick-prof" data-id="${p.id}"><span class="av" style="background:${p.color}">${esc(p.name[0].toUpperCase())}</span><span class="grow"><b>${esc(p.name)}</b><div class="small muted">${C.unitWord} ${p.set.unit}</div></span></button>`).join("")}</div>` : ""}
+  <button class="btn pri" data-act="new-prof">Criar perfil de estudo</button>
+  <div class="card small muted">Cada pessoa tem seu próprio perfil, com a sequência e as revisões dela. Entrando com a mesma conta no computador e no celular, o progresso é sincronizado automaticamente.</div></div>`;
+}
+function vToday() {
+  const pl = plan(), due = pl.reviews.length, nl = pl.news.length;
+  const d = dayRec(), tot = totals(), stk = streak();
+  const u = LEARN_UNITS.find(x => x.n === P.set.unit) || LEARN_UNITS[0];
+  const us = unitStats(u);
+  const hasCur = P.cur && P.cur.day === dkey() && P.cur.pos < P.cur.q.length;
+  const doneToday = d.done && !due && !nl;
+  const totalQ = due + nl;
+  return `<div class="stack">
+  <div class="hero">
+    <div class="eyebrow" style="color:inherit;opacity:.8">${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</div>
+    <h1>${hasCur ? "Continue de onde parou" : doneToday ? "Sessão de hoje concluída" : "Sua sessão de hoje"}</h1>
+    <div class="meta"><div><b>${due}</b><span>revisões</span></div><div><b>${nl}</b><span>novas</span></div><div><b>${stk}</b><span>dias seguidos</span></div></div>
+    <button class="btn sm ghost" style="align-self:flex-start;color:inherit;border-color:currentColor" data-act="goto-settings">Ajustar sessão: ${P.set.minutes ? P.set.minutes + " min por dia" : "sem limite de tempo"} · ${P.set.newPerDay} novas/dia</button>
+    ${pl.dueAll > due ? `<div class="small" style="opacity:.85">${pl.dueAll - due} revisões ficam para depois por causa do limite.</div>` : ""}
+    ${hasCur ? `<button class="btn pri" data-act="resume">Continuar (${P.cur.pos}/${P.cur.q.length})</button>` : totalQ ? `<button class="btn pri" data-act="daily">Começar · ~${Math.max(3, Math.round((due * SEC_REV + nl * SEC_NEW) / 60))} min</button>` : `<div style="opacity:.9">Nada pendente. Faça um treino livre de fala ou ditado, ou avance de ${C.unitWord.toLowerCase()} se já chegou nela no curso.</div>`}
+  </div>
+  ${FB && !fbUser ? accountCard() : ""}
+  <div class="card stack">
+    <div class="row"><div class="grow"><div class="eyebrow">Onde você está ${C.bookWord}</div><div style="font-weight:700;font-size:18px">${C.unitWord} ${u.n} · ${esc(u.title)}</div></div><button class="btn sm" data-act="open-unit" data-u="${u.id}">Abrir</button></div>
+    ${bar(us.seen / Math.max(1, us.n))}<div class="small muted">${us.seen} de ${us.n} itens apresentados · ${us.master} consolidados</div>
+    ${us.seen >= us.n && u.ui < C.units.length - 1 ? `<div class="row"><span class="small grow">Você já viu todo o conteúdo desta ${C.unitWord.toLowerCase()}.</span><button class="btn sm pri" data-act="advance">Avançar para a próxima</button></div>` : ""}
+  </div>
+  <div class="stats">
+    <div class="stat"><b>${tot.seen}</b><span>já estudados</span></div>
+    <div class="stat"><b>${tot.master}</b><span>consolidados</span></div>
+    <div class="stat"><b>${d.c + d.w}</b><span>respostas hoje</span></div>
+    <div class="stat"><b>${d.c + d.w ? Math.round(d.c / (d.c + d.w) * 100) : 0}%</b><span>acerto hoje</span></div>
+  </div>
+  <div class="card stack"><div class="eyebrow">Como funciona o método</div>
+  <div class="small">1. <b>Apresentação</b> da palavra com áudio e marca-texto. 2. <b>Reconhecimento</b> (escolher o significado, ouvir). 3. <b>Produção</b> (escrever, montar frases, ditado). 4. <b>Fala</b> em voz alta. Cada acerto empurra a próxima revisão para mais longe (1 → 2 → 4 → 7 → 12 → 21 dias); cada erro traz a palavra de volta. Estude todo dia, mesmo que só 10 minutos: a constância vale mais que a quantidade.</div></div>
+  </div>`;
+}
+function vUnits() {
+  const cur = unlockedIdx();
+  return `<div class="stack"><div><div class="eyebrow">${esc(C.bookTitle)}</div><h1 style="font-size:28px">${C.unitWord}s</h1><p class="small muted">Novos itens só entram até a ${C.unitWord.toLowerCase()} marcada como atual. Quando chegar na próxima ${C.bookWord2}, toque nela e marque como atual.</p></div>
+  <div class="stack" style="gap:8px">${C.units.map(u => {
+    const s = u.review ? null : unitStats(u);
+    const locked = u.ui > cur;
+    const label = u.review ? "R" : u.n;
+    return `<button class="unit ${u.review ? "rev" : ""} ${u.n === P.set.unit && !u.review ? "cur" : ""} ${locked ? "lock" : ""}" data-act="open-unit" data-u="${u.id}"><span class="n">${label}</span><span class="grow" style="min-width:0"><span class="t">${esc(u.title)}</span><span class="small muted" style="display:block">${esc(u.sub || "")}</span>${s ? `<span style="display:block;margin-top:6px">${bar(s.master / Math.max(1, s.n), "ok")}</span>` : ""}</span>${s ? `<span class="num small muted">${s.master}/${s.n}</span>` : `<span class="pill">revisão</span>`}</button>`;
+  }).join("")}</div></div>`;
+}
+function vUnit() {
+  const u = UNIT[viewArg]; if (!u) { view = "units"; return vUnits(); }
+  const items = u.review ? ITEMS.filter(it => u.covers.includes(UNIT[it.u].n)) : u.items;
+  const s = u.review ? null : unitStats(u);
+  const words = items.filter(x => x.k === "w"), sents = items.filter(x => x.k === "s");
+  const modes = [["mix", "Teste da " + C.unitWord.toLowerCase(), "Exercícios variados, 15 itens", I.target], ["flash", "Flashcards", "Vire e avalie se lembrou", I.cards], ["dict", "Ditado", "Ouça e escreva", I.ear], ["speak", "Fala", "Leia em voz alta e confira", I.mic], ["type", "Escrita", "Traduza do português", I.pen], ["tiles", "Montar frases", "Organize as palavras", I.puzzle]];
+  return `<div class="stack"><button class="btn sm ghost" style="align-self:flex-start" data-act="tab" data-v="units">← ${C.unitWord}s</button>
+  <div><div class="eyebrow">${u.review ? "Revisão" : C.unitWord + " " + u.n}</div><h1 style="font-size:28px">${esc(u.title)}</h1>${u.sub ? `<p class="muted small">${esc(u.sub)}</p>` : ""}</div>
+  ${!u.review ? (u.n === P.set.unit ? `<span class="pill brand" style="align-self:flex-start">${C.unitWord} atual</span>` : `<button class="btn sm" style="align-self:flex-start" data-act="set-unit" data-n="${u.n}">Marcar como ${C.unitWord.toLowerCase()} atual</button>`) : ""}
+  ${s ? `<div class="card stack" style="gap:8px">${bar(s.master / Math.max(1, s.n), "ok")}<div class="small muted">${s.seen}/${s.n} apresentados · ${s.master} consolidados</div></div>` : ""}
+  <div class="grid2">${modes.map(([k, t, d, ic]) => `<button class="mode" data-act="practice" data-u="${u.id}" data-x="${k}"><span class="ic">${ic}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("")}</div>
+  ${u.grammar ? `<div class="card gram"><div class="eyebrow">Gramática</div>${u.grammar}</div>` : ""}
+  ${!u.review ? `<div class="card"><div class="eyebrow">Vocabulário (${words.length})</div><div class="list">${words.map(itemRow).join("")}</div></div>
+  ${sents.length ? `<div class="card"><div class="eyebrow">Frases (${sents.length})</div><div class="list">${sents.map(itemRow).join("")}</div></div>` : ""}` : `<div class="card small muted">Esta revisão mistura ${items.length} itens das ${C.unitWord.toLowerCase()}s ${u.covers.join(", ")}. Faça o teste até acertar mais de 85%.</div>`}
+  </div>`;
+}
+function itemRow(it) { const s = P.it[it.id]; const b = s ? s.b : 0; return `<div class="li"><button class="icon-btn" data-act="say-text" data-t="${esc(it.t)}" aria-label="Ouvir">${I.speaker}</button><div class="grow" style="min-width:0"><div class="en">${esc(it.t)}</div><div class="small muted">${esc(it.m)}</div></div><div class="dots" title="Nível de memorização">${[1, 2, 3, 4].map(i => `<i class="${b >= i + (i > 2 ? 0 : 0) ? "on" : ""}"></i>`).join("")}</div></div>`; }
+function learnedItems() { return ITEMS.filter(it => seen(it.id)); }
+function vTrain() {
+  const L = learnedItems();
+  const hard = L.filter(it => P.it[it.id].l > 0).sort((a, b) => P.it[b.id].l - P.it[a.id].l);
+  const cards = [
+    ["t-dict", "Ditado relâmpago", "15 itens que você já viu: ouça e escreva", I.ear],
+    ["t-speak", "Treino de fala", "Leia frases em voz alta e confira a pronúncia", I.mic],
+    ["t-hard", "Palavras difíceis", hard.length ? hard.length + " itens que você já errou" : "Nenhum erro registrado ainda", I.target],
+    ["t-flash", "Flashcards gerais", "Tudo o que já foi apresentado", I.cards],
+    ["t-type", "Tradução escrita", "Do português para o " + C.langName.toLowerCase(), I.pen],
+    ["write", "Escrita livre com correção", "Escreva um texto curto e receba correção do Claude", I.spark],
+  ];
+  return `<div class="stack"><div><div class="eyebrow">Treino livre</div><h1 style="font-size:28px">Reforce o que já estudou</h1><p class="small muted">Use depois da sessão do dia. Erros aqui trazem o item de volta para a revisão de hoje.</p></div>
+  ${L.length < 4 ? `<div class="card empty">Faça a primeira sessão do dia para liberar os treinos livres.</div>` : ""}
+  <div class="grid2">${cards.map(([k, t, d, ic]) => `<button class="mode" data-act="${k}"><span class="ic">${ic}</span><b>${t}</b><span class="small muted">${d}</span></button>`).join("")}</div></div>`;
+}
+function heat() {
+  const cells = []; const d = new Date(); d.setDate(d.getDate() - (16 * 7 - 1) - d.getDay());
+  for (let i = 0; i < 16 * 7; i++) { const k = dkey(d); const r = P.days[k]; const n = r ? r.c + r.w : 0; const l = n === 0 ? "" : n < 15 ? "l1" : n < 40 ? "l2" : "l3"; cells.push(`<i class="${l}" title="${d.toLocaleDateString("pt-BR")}: ${n} respostas"></i>`); d.setDate(d.getDate() + 1); }
+  return `<div class="heat">${cells.join("")}</div>`;
+}
+function vProgress() {
+  const tot = totals(), sk = P.sk;
+  const pct = a => a[1] ? Math.round(a[0] / a[1] * 100) : 0;
+  const skills = [["Leitura", sk.r], ["Escrita", sk.w], ["Audição", sk.l], ["Fala", sk.f]];
+  let mins = 0; Object.values(P.days).forEach(d => mins += (d.s || 0) / 60);
+  return `<div class="stack"><div><div class="eyebrow">${esc(P.name)}</div><h1 style="font-size:28px">Progresso</h1></div>
+  <div class="stats"><div class="stat"><b>${streak()}</b><span>dias seguidos</span></div><div class="stat"><b>${tot.master}</b><span>consolidados</span></div><div class="stat"><b>${tot.seen}/${tot.all}</b><span>apresentados</span></div><div class="stat"><b>${Math.round(mins / 60 * 10) / 10}h</b><span>de estudo</span></div></div>
+  <div class="card stack"><div class="eyebrow">Últimas 16 semanas</div>${heat()}<div class="tiny muted">Cada quadrado é um dia. Mais escuro = mais respostas. Meta: pelo menos 10 respostas por dia.</div></div>
+  <div class="card stack"><div class="eyebrow">Habilidades (acerto)</div>${skills.map(([n, a]) => `<div class="stack" style="gap:4px"><div class="row"><span class="grow small" style="font-weight:600">${n}</span><span class="num small muted">${pct(a)}% · ${a[1]}</span></div>${bar(pct(a) / 100)}</div>`).join("")}</div>
+  ${C.exam && P.exam.hist.length ? `<div class="card stack"><div class="eyebrow">Simulados</div><div class="list">${P.exam.hist.slice(-8).reverse().map(h => `<div class="li"><div class="grow"><b>${esc(h.title)}</b><div class="small muted">${new Date(h.ts).toLocaleDateString("pt-BR")}</div></div><span class="pill ${h.pct >= 70 ? "ok" : h.pct >= 50 ? "warn" : "bad"}">${h.pct}%</span></div>`).join("")}</div></div>` : ""}
+  <div class="card stack" id="settings"><div class="eyebrow">Configurações deste perfil · quanto estudar</div>
+   <div class="field"><label>Tempo de estudo por dia</label><div class="seg">${[[0, "Livre"], [10, "10 min"], [15, "15 min"], [20, "20 min"], [30, "30 min"], [45, "45 min"]].map(([v, l]) => `<button data-act="set" data-k="minutes" data-v="${v}" aria-pressed="${(P.set.minutes || 0) === v}">${l}</button>`).join("")}</div><div class="tiny muted">O app monta a sessão do dia para caber nesse tempo, priorizando as revisões. "Livre" usa só os limites abaixo.</div></div>
+   <div class="field"><label for="s-new">Itens novos por dia</label><div class="seg" id="s-new">${[5, 10, 15, 20, 30].map(n => `<button data-act="set" data-k="newPerDay" data-v="${n}" aria-pressed="${P.set.newPerDay === n}">${n}</button>`).join("")}</div><div class="tiny muted">10 a 15 é o ideal para quem estuda junto com o curso.</div></div>
+   <div class="field"><label>Revisões máximas por dia</label><div class="seg">${[40, 80, 150, 300].map(n => `<button data-act="set" data-k="maxRev" data-v="${n}" aria-pressed="${P.set.maxRev === n}">${n}</button>`).join("")}</div></div>
+   <div class="field"><label>Velocidade da voz</label><div class="seg">${[[0.8, "Lenta"], [1, "Normal"], [1.15, "Rápida"]].map(([v, l]) => `<button data-act="set" data-k="rate" data-v="${v}" aria-pressed="${P.set.rate === v}">${l}</button>`).join("")}</div></div>
+   <div class="field"><label for="s-voice">Voz</label><select class="inp" id="s-voice" data-act-change="voice"><option value="">Automática</option>${VOICES.map(v => `<option ${P.set.voice === v.name ? "selected" : ""}>${esc(v.name)}</option>`).join("")}</select>${VOICES.length ? "" : `<div class="tiny muted">Nenhuma voz em ${esc(C.langName.toLowerCase())} encontrada neste aparelho; o app tenta a voz do Claude.</div>`}</div>
+   <div class="row"><label class="row grow small" style="font-weight:600"><input type="checkbox" data-act-change="audio" ${P.set.audio ? "checked" : ""}> Exercícios com áudio</label><label class="row grow small" style="font-weight:600"><input type="checkbox" data-act-change="speakset" ${P.set.speak ? "checked" : ""}> Exercícios de fala</label></div>
+   <div class="row"><button class="btn sm" data-act="rename">Renomear perfil</button><button class="btn sm" data-act="backup">Código de backup</button><button class="btn sm" data-act="profiles">Trocar / criar perfil</button></div>
+  </div>
+  ${accountCard()}
+  <div class="tiny muted">${SYNC_TXT[sync] || ""}</div>
+  </div>`;
+}
+
+/* ---------- escrita livre (Claude) ---------- */
+let writeState = { prompt: null, text: "", res: null, busy: false };
+function writePrompts() {
+  const lim = unlockedIdx();
+  const out = [];
+  C.units.forEach(u => { if (u.ui <= lim && u.write) u.write.forEach(w => out.push({ u: u.id, t: w })); });
+  return out.length ? out : (C.units[0].write || []).map(w => ({ u: C.units[0].id, t: w }));
+}
+function vWrite() {
+  const ps = writePrompts();
+  if (!writeState.prompt) writeState.prompt = ps[ps.length - 1];
+  const w = writeState;
+  const wc = (w.text.trim().match(/\S+/g) || []).length;
+  return `<div class="stack"><button class="btn sm ghost" style="align-self:flex-start" data-act="tab" data-v="train">← Treino</button>
+  <div><div class="eyebrow">Escrita livre</div><h1 style="font-size:26px">Escreva e receba correção</h1></div>
+  <div class="field"><label for="wp">Tema</label><select class="inp" id="wp" data-act-change="wprompt">${ps.map((p, i) => `<option value="${i}" ${p === w.prompt ? "selected" : ""}>${esc(UNIT[p.u].short || UNIT[p.u].title)} — ${esc(p.t)}</option>`).join("")}</select></div>
+  <div class="card"><b>${esc(w.prompt.t)}</b></div>
+  <div class="field"><label for="wtext">Seu texto em ${esc(C.langName.toLowerCase())} <span class="muted num">(${wc} palavras)</span></label><textarea class="inp" id="wtext" data-act-input="wtext" placeholder="Escreva aqui…">${esc(w.text)}</textarea></div>
+  ${aiAvailable() ? `<button class="btn pri" data-act="wcorrect" ${w.busy ? "disabled" : ""}>${w.busy ? "Corrigindo…" : "Corrigir com IA"}</button>` : `<div class="card small muted">${AI_OFF_MSG()} Enquanto isso, compare seu texto com as frases da ${C.unitWord.toLowerCase()}.</div>`}
+  <div id="wres">${w.res ? writeResult(w.res) : ""}</div></div>`;
+}
+function writeResult(r) {
+  if (r.error) return `<div class="card small" style="color:var(--bad)">${esc(r.error)}</div>`;
+  return `<div class="card stack"><div class="row"><span class="pill brand">Nota ${esc(r.nota ?? "-")}/10</span>${r.nivel ? `<span class="pill">${esc(r.nivel)}</span>` : ""}</div><div>${esc(r.resumo || "")}</div>
+  ${(r.correcoes || []).map(c => `<div class="corr small"><s>${esc(c.original)}</s> → <b>${esc(c.correto)}</b><div class="muted">${esc(c.explicacao)}</div></div>`).join("")}
+  ${r.versao_corrigida ? `<div><div class="eyebrow">Versão corrigida</div><div class="examtext">${esc(r.versao_corrigida)}</div><button class="btn sm ghost" data-act="say-text" data-t="${esc(r.versao_corrigida)}">${I.speaker} Ouvir</button></div>` : ""}
+  ${r.dica ? `<div class="small"><b>Dica:</b> ${esc(r.dica)}</div>` : ""}</div>`;
+}
+async function correctWriting(text, task, extra) {
+  const prompt = `Você é professor(a) de ${C.langName} para uma aluna brasileira (nível ${extra?.level || "iniciante/intermediário"}). Corrija o texto abaixo, escrito em ${C.langName}, para a tarefa indicada. Responda SOMENTE com JSON no formato:
+{"nota": número de 0 a 10, "nivel": "nível CECR estimado (A1–C1)"${extra?.examFields || ""}, "resumo": "2 frases em português sobre o desempenho", "correcoes": [{"original": "trecho com erro", "correto": "trecho corrigido", "explicacao": "explicação curta em português"}], "versao_corrigida": "texto completo corrigido, mantendo as ideias da aluna", "dica": "uma dica prática em português para a próxima vez"}
+Liste no máximo 8 correções, as mais importantes. Se o texto estiver vazio ou em português, diga isso no resumo e dê nota 0.
+
+TAREFA: ${task}
+
+TEXTO DA ALUNA:
+${text}`;
+  return aiJson(prompt);
+}
+
+/* ---------- provas (TEF/TCF) ---------- */
+let EX = null; // estado do exame em andamento
+function vExam() {
+  const E = C.exam;
+  const hist = P.exam.hist;
+  const best = k => { const h = hist.filter(x => x.sec === k); return h.length ? Math.max(...h.map(x => x.pct)) : null; };
+  const secs = [["co", "Compreensão oral", `${E.co.length} questões com áudio`, I.ear], ["ce", "Compreensão escrita", `${E.ce.length} textos com questões`, I.book], ["ee", "Expressão escrita", `${E.ee.length} tarefas com correção`, I.pen], ["eo", "Expressão oral", `${E.eo.length} tarefas com cronômetro`, I.mic], ["sim", "Simulado rápido", "CO + CE cronometrado, 20 questões", I.target]];
+  return `<div class="stack"><div><div class="eyebrow">Preparação</div><h1 style="font-size:28px">${esc(E.title)}</h1><p class="small muted">${esc(E.intro)}</p></div>
+  <div class="grid2">${secs.map(([k, t, d, ic]) => `<button class="mode" data-act="exam-sec" data-s="${k}"><span class="ic">${ic}</span><b>${t}</b><span class="small muted">${d}${best(k) != null ? ` · melhor: ${best(k)}%` : ""}</span></button>`).join("")}</div>
+  ${E.info}
+  </div>`;
+}
+function vExamSec() {
+  const k = viewArg, E = C.exam;
+  const back = `<button class="btn sm ghost" style="align-self:flex-start" data-act="tab" data-v="exam">← Provas</button>`;
+  if (k === "co" || k === "ce" || k === "sim") {
+    if (!EX || EX.sec !== k) {
+      const list = k === "sim" ? [...shuffle(E.co).slice(0, 10).map(q => ({ ...q, kind: "co" })), ...shuffle(E.ce).slice(0, 10).map(q => ({ ...q, kind: "ce" }))] : (k === "co" ? E.co.map(q => ({ ...q, kind: "co" })) : E.ce.map(q => ({ ...q, kind: "ce" })));
+      list.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "co" ? -1 : 1) || levelN(a.level) - levelN(b.level));
+      EX = { sec: k, list, pos: 0, ans: [], started: Date.now(), limit: k === "sim" ? 25 * 60 : 0 };
+    }
+    return back + examQ();
+  }
+  const tasks = k === "ee" ? E.ee : E.eo;
+  if (!EX || EX.sec !== k) EX = { sec: k, task: null, text: "", res: null, busy: false };
+  if (EX.task == null) return `<div class="stack">${back}<div><div class="eyebrow">${k === "ee" ? "Expressão escrita" : "Expressão oral"}</div><h1 style="font-size:26px">Escolha uma tarefa</h1></div>${k === "eo" ? `<p class="small muted">Prepare-se, fale em voz alta pelo tempo indicado. Se o microfone estiver disponível, o app transcreve sua fala e o Claude avalia; senão, digite um resumo do que falou.</p>` : ""}
+    <div class="stack" style="gap:8px">${tasks.map((t, i) => `<button class="unit" data-act="exam-task" data-i="${i}"><span class="n">${esc(t.exam)}</span><span class="grow"><span class="t">${esc(t.task)}</span><span class="small muted" style="display:block">${esc(t.short)}</span></span><span class="pill">${esc(t.time)}</span></button>`).join("")}</div></div>`;
+  const t = tasks[EX.task];
+  const wc = (EX.text.trim().match(/\S+/g) || []).length;
+  return `<div class="stack">${back}<div><div class="eyebrow">${esc(t.exam)} · ${esc(t.task)} · ${esc(t.time)}${t.words ? " · " + esc(t.words) : ""}</div><h1 style="font-size:22px">${esc(t.short)}</h1></div>
+  <div class="examtext">${esc(t.prompt)}</div>
+  ${t.tips ? `<details class="card"><summary>Estrutura sugerida</summary><div class="small gram">${t.tips}</div></details>` : ""}
+  <div class="row"><span class="timer" id="extimer">${fmtT(EX.secs ?? t.secs)}</span><button class="btn sm" data-act="ex-timer">${EX.tick ? "Pausar" : "Iniciar cronômetro"}</button></div>
+  ${k === "eo" && canListen() ? `<div class="row"><button class="mic" id="micbtn" data-act="eo-mic" aria-label="Falar">${I.mic}</button><div id="miclbl" class="small muted grow">Toque e fale; toque de novo para parar.</div></div>` : ""}
+  <div class="field"><label for="extext">${k === "ee" ? "Seu texto" : "Transcrição da sua fala (pode editar)"} <span class="muted num">(${wc} palavras)</span></label><textarea class="inp" id="extext" data-act-input="extext" style="min-height:220px">${esc(EX.text)}</textarea></div>
+  ${aiAvailable() ? `<button class="btn pri" data-act="ex-correct" ${EX.busy ? "disabled" : ""}>${EX.busy ? "Avaliando…" : "Avaliar com IA"}</button>` : `<div class="card small muted">${AI_OFF_MSG()} Compare com a resposta-modelo quando houver.</div>`}
+  ${t.model ? `<details class="card"><summary>Ver resposta-modelo</summary><div class="examtext" style="margin-top:10px">${esc(t.model)}</div></details>` : ""}
+  <div id="exres">${EX.res ? writeResult(EX.res) : ""}</div></div>`;
+}
+const levelN = l => ["A1", "A2", "B1", "B2", "C1", "C2"].indexOf(l);
+const fmtT = s => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+function examQ() {
+  if (EX.pos >= EX.list.length) return examEnd();
+  const q = EX.list[EX.pos]; const a = EX.ans[EX.pos];
+  const left = EX.limit ? Math.max(0, EX.limit - Math.round((Date.now() - EX.started) / 1000)) : null;
+  return `<div class="stack"><div class="row"><div class="grow">${bar(EX.pos / EX.list.length)}</div><span class="num small muted">${EX.pos + 1}/${EX.list.length}</span>${left != null ? `<span class="pill warn num" id="simtimer">${fmtT(left)}</span>` : ""}</div>
+  <div class="row"><span class="pill">${q.kind === "co" ? "Compreensão oral" : "Compreensão escrita"}</span><span class="pill brand">${esc(q.level)}</span></div>
+  ${q.kind === "co" ? `<div class="card stack"><div class="small muted">${esc(q.ctx || "Ouça o documento.")}</div><div class="row"><button class="play" data-act="co-play" aria-label="Ouvir">${I.play}</button><span class="small muted">No exame o áudio toca uma ou duas vezes. Tente responder ouvindo no máximo 2 vezes.</span></div>${a ? `<details open><summary class="small">Transcrição</summary><div class="examtext small" style="margin-top:8px">${q.audio.map(l => esc((l.s ? l.s + ": " : "") + l.t)).join("\n")}</div></details>` : ""}</div>` : `<div class="examtext">${esc(q.text)}</div>`}
+  <b>${esc(q.q)}</b>
+  <div class="opts">${q.options.map((o, i) => `<button class="opt ${a ? (i === q.answer ? "right" : (a.pick === i ? "wrong" : "")) : ""}" data-act="ex-pick" data-i="${i}" ${a ? "disabled" : ""}><span class="k">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`).join("")}</div>
+  ${a ? `<div class="card small">${esc(q.explain || "")}</div><button class="btn pri" data-act="ex-next">${EX.pos + 1 < EX.list.length ? "Próxima" : "Ver resultado"}</button>` : ""}</div>`;
+}
+function examEnd() {
+  const c = EX.ans.filter(a => a && a.ok).length, n = EX.list.length, pct = Math.round(c / n * 100);
+  if (!EX.saved) { EX.saved = 1; P.exam.hist.push({ id: Date.now().toString(36), sec: EX.sec, title: { co: "Compreensão oral", ce: "Compreensão escrita", sim: "Simulado rápido" }[EX.sec], pct, ts: Date.now() }); touch(); }
+  const byLvl = {}; EX.list.forEach((q, i) => { const l = q.level; byLvl[l] = byLvl[l] || [0, 0]; byLvl[l][1]++; if (EX.ans[i] && EX.ans[i].ok) byLvl[l][0]++; });
+  return `<div class="stack"><div class="eyebrow">Resultado</div><h1 style="font-size:30px">${c}/${n} · ${pct}%</h1>
+  <div class="card stack"><div class="eyebrow">Acerto por nível</div>${Object.entries(byLvl).sort((a, b) => levelN(a[0]) - levelN(b[0])).map(([l, v]) => `<div class="row"><span class="pill brand">${l}</span><div class="grow">${bar(v[0] / v[1])}</div><span class="num small">${v[0]}/${v[1]}</span></div>`).join("")}</div>
+  <div class="card small">${esc(C.exam.estimate(byLvl))}</div>
+  <button class="btn pri" data-act="ex-restart">Refazer</button></div>`;
+}
+let exTick = null;
+function examTimer() {
+  clearInterval(exTick);
+  exTick = setInterval(() => {
+    if (!EX) return clearInterval(exTick);
+    if (EX.limit) { const el = $("#simtimer"); const left = Math.max(0, EX.limit - Math.round((Date.now() - EX.started) / 1000)); if (el) el.textContent = fmtT(left); if (!left && EX.pos < EX.list.length) { EX.pos = EX.list.length; render(); } }
+    if (EX.tick) { EX.secs = Math.max(0, (EX.secs ?? 0) - 1); const el = $("#extimer"); if (el) el.textContent = fmtT(EX.secs); if (!EX.secs) { EX.tick = false; toast("Tempo esgotado!"); render(); } }
+  }, 1000);
+}
+
+/* ---------- profiles sheet ---------- */
+function profilesSheet() {
+  openSheet(`<h2 style="font-size:22px">Quem vai estudar?</h2>
+  <div class="stack" style="gap:8px">${S.order.map(id => S.profiles[id]).filter(Boolean).map(p => `<button class="prof" data-act="pick-prof" data-id="${p.id}"><span class="av" style="background:${p.color}">${esc(p.name[0].toUpperCase())}</span><span class="grow"><b>${esc(p.name)}</b><div class="small muted">${C.unitWord} ${p.set.unit} · ${totalsOf(p)} itens estudados</div></span>${P && P.id === p.id ? '<span class="pill brand">atual</span>' : ""}</button>`).join("")}</div>
+  <button class="btn pri" data-act="new-prof">Novo perfil</button>
+  ${P ? `<button class="btn ghost sm" data-act="del-prof">Excluir o perfil "${esc(P.name)}"</button>` : ""}
+  <button class="btn ghost" data-act="sheet-close">Fechar</button>`);
+}
+function totalsOf(p) { return Object.values(p.it || {}).filter(s => s.b > 0).length; }
+function newProfSheet() {
+  let color = COLORS[S.order.length % COLORS.length];
+  openSheet(`<h2 style="font-size:22px">Novo perfil</h2>
+  <div class="field"><label for="np-name">Nome</label><input class="inp" id="np-name" maxlength="30" placeholder="Ex.: Laura"></div>
+  <div class="field"><label>Cor</label><div class="colors">${COLORS.map(c => `<button data-act="np-color" data-c="${c}" style="background:${c}" aria-pressed="${c === color}" aria-label="Cor"></button>`).join("")}</div></div>
+  <div class="field"><label for="np-unit">${C.startQuestion}</label><select class="inp" id="np-unit">${LEARN_UNITS.map(u => `<option value="${u.n}">${C.unitWord} ${u.n} — ${esc(u.title)}</option>`).join("")}</select><div class="tiny muted">${C.startHint}</div></div>
+  <button class="btn pri" data-act="np-save" data-c="${color}">Criar e começar</button><button class="btn ghost" data-act="sheet-close">Cancelar</button>`);
+  setTimeout(() => { const n = $("#np-name"); if (!n) return; if (fbUser && !S.order.length && fbUser.displayName) n.value = fbUser.displayName.split(" ")[0]; n.focus(); }, 50);
+}
+function backupSheet() {
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(P))));
+  openSheet(`<h2 style="font-size:22px">Código de backup</h2><p class="small muted">Copie este código para guardar o progresso de <b>${esc(P.name)}</b> ou levá-lo para outro aparelho sem login. No outro aparelho, cole em "Importar".</p>
+  <textarea class="inp" id="bk-out" readonly style="min-height:110px;font-family:var(--f-mono);font-size:12px">${code}</textarea>
+  <button class="btn" data-act="bk-copy">Copiar código</button>
+  <div class="field"><label for="bk-in">Importar um código</label><textarea class="inp" id="bk-in" style="min-height:90px;font-family:var(--f-mono);font-size:12px" placeholder="Cole o código aqui"></textarea></div>
+  <button class="btn pri" data-act="bk-import">Importar (mescla com o progresso atual)</button><button class="btn ghost" data-act="sheet-close">Fechar</button>`);
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", ev => {
+  const el = ev.target.closest("[data-act]"); if (!el) return;
+  const a = el.dataset.act;
+  if (a === "sheet-bg" && ev.target !== el) return;
+  const it = R && R.cur ? BYID[R.cur.id] : null;
+  switch (a) {
+    case "tab": view = el.dataset.v; viewArg = null; if (view !== "exam") {} render(); break;
+    case "profiles": profilesSheet(); break;
+    case "login": loginGoogle(); break;
+    case "logout": logoutGoogle(); break;
+    case "local-only": S.localOnly = true; saveLocal(); render(); break;
+    case "sheet-bg": case "sheet-close": closeSheet(); break;
+    case "pick-prof": setProfile(el.dataset.id); closeSheet(); view = "today"; render(); break;
+    case "new-prof": newProfSheet(); break;
+    case "np-color": el.parentElement.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b === el)); $("[data-act=np-save]").dataset.c = el.dataset.c; break;
+    case "np-save": {
+      const name = $("#np-name").value.trim(); if (!name) { $("#np-name").focus(); return; }
+      const p = newProfile(name, el.dataset.c, +$("#np-unit").value);
+      S.profiles[p.id] = p; S.order.push(p.id); setProfile(p.id); closeSheet(); touch(); view = "today"; render(); break;
+    }
+    case "del-prof": openSheet(`<h2 style="font-size:20px">Excluir "${esc(P.name)}"?</h2><p class="small muted">Todo o progresso deste perfil será apagado em todos os aparelhos. Não dá para desfazer.</p><button class="btn" style="color:var(--bad)" data-act="del-yes">Excluir definitivamente</button><button class="btn ghost" data-act="sheet-close">Cancelar</button>`); break;
+    case "del-yes": { const id = P.id; delete S.profiles[id]; S.order = S.order.filter(x => x !== id); S.deleted.push(id); dirty.add(id); P = null; setProfile(S.order[0]); saveLocal(); flush(); closeSheet(); render(); break; }
+    case "rename": openSheet(`<h2 style="font-size:20px">Renomear perfil</h2><input class="inp" id="rn" value="${esc(P.name)}" maxlength="30"><button class="btn pri" data-act="rn-save">Salvar</button><button class="btn ghost" data-act="sheet-close">Cancelar</button>`); break;
+    case "rn-save": { const v = $("#rn").value.trim(); if (v) { P.name = v; touch(); updateChip(); } closeSheet(); render(); break; }
+    case "backup": backupSheet(); break;
+    case "bk-copy": { const t = $("#bk-out"); navigator.clipboard?.writeText(t.value).then(() => toast("Código copiado"), () => { t.select(); toast("Selecione e copie o código"); }); if (!navigator.clipboard) { t.select(); } break; }
+    case "bk-import": {
+      try { const p = JSON.parse(decodeURIComponent(escape(atob($("#bk-in").value.trim())))); if (!p || p.app !== C.key || !p.it) throw 0;
+        const ex = S.profiles[p.id]; S.profiles[p.id] = ex ? mergeProfiles(ex, p) : p; if (!ex) S.order.push(p.id); S.profiles[p.id].updated = Date.now(); setProfile(p.id); dirty.add(p.id); saveLocal(); flush(); closeSheet(); render(); toast("Progresso importado");
+      } catch (e) { toast("Código inválido. Confira se copiou o código inteiro."); }
+      break;
+    }
+    case "set": { const k = el.dataset.k; P.set[k] = +el.dataset.v; touch(); const y = window.scrollY; render(); window.scrollTo(0, y); toast("Configuração salva"); break; }
+    case "goto-settings": view = "progress"; render(); setTimeout(() => { const e = $("#settings"); if (e) e.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60); break;
+    case "daily": startRun(buildSession(), "daily", "Sessão do dia"); break;
+    case "resume": resumeRun(); break;
+    case "advance": { const i = LEARN_UNITS.findIndex(u => u.n === P.set.unit); if (LEARN_UNITS[i + 1]) { P.set.unit = LEARN_UNITS[i + 1].n; touch(); toast(C.unitWord + " " + P.set.unit + " liberada"); render(); } break; }
+    case "open-unit": view = "unit"; viewArg = el.dataset.u; render(); break;
+    case "set-unit": P.set.unit = +el.dataset.n; touch(); toast(C.unitWord + " atual: " + P.set.unit); render(); break;
+    case "practice": {
+      const u = UNIT[el.dataset.u], x = el.dataset.x;
+      const items = u.review ? ITEMS.filter(i => u.covers.includes(UNIT[i.u].n)) : u.items;
+      if (x === "flash") return startFlash(items);
+      let pool = items;
+      if (x === "speak" || x === "tiles") pool = items.filter(i => i.k === "s").length >= 4 ? items.filter(i => i.k === "s") : items;
+      startRun(practiceQueue(pool, x, 15), "practice", (u.review ? "Revisão" : C.unitWord + " " + u.n));
+      break;
+    }
+    case "t-dict": startRun(practiceQueue(learnedItems(), "dict", 15), "practice", "Ditado relâmpago"); break;
+    case "t-speak": { const L = learnedItems(); const s = L.filter(i => i.k === "s"); startRun(practiceQueue(s.length >= 5 ? s : L, "speak", 10), "practice", "Treino de fala"); break; }
+    case "t-hard": { const L = learnedItems().filter(it => P.it[it.id].l > 0).sort((a, b) => P.it[b.id].l - P.it[a.id].l).slice(0, 20); startRun(practiceQueue(L, "mix", 20), "practice", "Palavras difíceis"); break; }
+    case "t-flash": startFlash(learnedItems()); break;
+    case "t-type": startRun(practiceQueue(learnedItems(), "type", 15), "practice", "Tradução escrita"); break;
+    case "write": view = "write"; render(); break;
+    case "wcorrect": {
+      const w = writeState; if (!w.text.trim()) return toast("Escreva seu texto primeiro.");
+      w.busy = true; render();
+      correctWriting(w.text, w.prompt.t).then(r => { w.res = r; (P.writes = P.writes || []).push({ id: Date.now().toString(36), ts: Date.now(), task: w.prompt.t, nota: r.nota }); touch(); }).catch(e => { w.res = { error: aiErr(e) }; }).finally(() => { w.busy = false; if (view === "write") render(); });
+      break;
+    }
+    /* runner */
+    case "run-close": closeRun(false); break;
+    case "run-done": closeRun(true); break;
+    case "say": if (it) speak(it.t, { force: true }); break;
+    case "say-slow": if (it) speak(it.t, { slow: true, force: true }); break;
+    case "say-text": speak(el.dataset.t, { force: true }); break;
+    case "next": if (R.kind === "flash") { R.pos++; R.flip = false; showFlash(); } else { R.pos++; if (R.kind === "daily" && P.cur) { P.cur.pos = R.pos; touch(); } showEx(); } break;
+    case "pick": {
+      if (R.ans) return; const o = R.opts[+el.dataset.i]; const ok = o.id === it.id || o.m === it.m;
+      document.querySelectorAll(".opt").forEach((b, i) => { b.disabled = true; if (R.opts[i].m === it.m) b.classList.add("right"); });
+      if (!ok) el.classList.add("wrong");
+      feedback(ok, "ok", it); break;
+    }
+    case "check": doCheck(); break;
+    case "why": {
+      const box = $("#why"); el.disabled = true; el.innerHTML = "Analisando…";
+      const ex = R.cur.ex;
+      aiJson(`Você é professor(a) de ${C.langName} para uma aluna brasileira. Exercício: ${EXNAME[ex]} — ${EXHELP[ex] || ""}. Resposta esperada: "${it.t}" (significado em português: "${it.m}"). Resposta da aluna: "${R.lastAns}". Explique em português, de forma curta e didática, exatamente qual foi o erro (grafia, acento, artigo, ordem das palavras, tempo verbal, vocabulário…) e a regra ou o macete para não errar de novo. Se a resposta da aluna também estiver correta (sinônimo ou variação aceitável), diga isso. Responda SOMENTE com JSON: {"explicacao": "até 3 frases", "dica": "uma frase curta de memorização", "tambem_correta": true ou false}`)
+        .then(r => {
+          box.innerHTML = `<div class="card small stack" style="gap:6px">${r.tambem_correta ? '<span class="pill ok" style="align-self:flex-start">Sua resposta também é aceitável</span>' : ""}<div>${esc(r.explicacao || "")}</div>${r.dica ? `<div><b>Dica:</b> ${esc(r.dica)}</div>` : ""}${r.tambem_correta && R.ans && !R.ans.ok ? `<button class="btn sm" style="align-self:flex-start" data-act="accept">Contar como certa</button>` : ""}</div>`;
+          el.remove();
+        })
+        .catch(e => { box.innerHTML = `<div class="small" style="color:var(--bad)">${esc(aiErr(e))}</div>`; el.disabled = false; el.innerHTML = I.spark + " Por que errei?"; });
+      break;
+    }
+    case "accept": {
+      if (!R.snap || !R.ans || R.ans.ok) break;
+      if (R.snap.st) P.it[it.id] = R.snap.st; else delete P.it[it.id];
+      const d = dayRec(); Object.assign(d, R.snap.dc);
+      const k = R.q.findIndex((q, i) => i > R.pos && q.id === it.id && q.mode === "retry"); if (k > 0) R.q.splice(k, 1);
+      R.wrong.delete(it.id); R.res.pop();
+      grade(it, true, R.cur.mode); R.res.push({ id: it.id, ok: true, ex: R.cur.ex }); R.ans.ok = true;
+      if (R.kind === "daily" && P.cur) P.cur.q = R.q;
+      touch(); el.replaceWith(Object.assign(document.createElement("span"), { className: "pill ok", textContent: "Contada como certa" }));
+      break;
+    }
+    case "ins": { const i = $("#ansinp"); if (i) { const p = i.selectionStart ?? i.value.length; i.value = i.value.slice(0, p) + el.dataset.c + i.value.slice(i.selectionEnd ?? p); i.focus(); i.setSelectionRange(p + 1, p + 1); } break; }
+    case "tile": { if (R.ans) return; const t = R.tiles.all.find(x => x.i === +el.dataset.i); if (t && !R.tiles.picked.includes(t)) { R.tiles.picked.push(t); drawTiles(); } break; }
+    case "untile": { if (R.ans) return; R.tiles.picked.splice(+el.dataset.k, 1); drawTiles(); break; }
+    case "mic": {
+      if (micState !== "idle") { micStop(); break; }
+      try { speechSynthesis.cancel(); } catch (e) {}
+      const target = it.t;
+      micStart((text, final, reason) => {
+        const sd = $("#said"); if (!sd || !R || R.cur.id !== it.id) return;
+        if (reason && !["stopped", "viewer_stopped", "no-speech"].includes(reason) && !text.trim()) { sd.innerHTML = `<div class="small muted">Microfone indisponível (${esc(reason)}). Avalie você mesma com os botões abaixo.</div>`; return; }
+        const r = speechScore(text, target);
+        sd.innerHTML = `<div class="small muted">Você disse: “${esc(text.trim())}”</div><div>${r.words.map((w, i) => `<span class="${r.marks[i] ? "w-ok" : "w-miss"}">${esc(w)}</span>`).join(" ")}</div>`;
+        if (final && text.trim() && !R.ans) { const ok = r.score >= 0.75; feedback(ok, ok && r.score < 1 ? "typo" : "ok", it, `<div class="small">Pronúncia reconhecida: ${Math.round(r.score * 100)}%</div>`); }
+      });
+      break;
+    }
+    case "self-ok": if (!R.ans) { micStop(); feedback(true, "ok", it); } break;
+    case "self-bad": if (!R.ans) { micStop(); feedback(false, "bad", it); } break;
+    case "flip": R.flip = !R.flip; if (R.flip && R.dir === "pt") speak(it.t); showFlash(); break;
+    case "fdir": R.dir = el.dataset.d; R.flip = false; showFlash(); break;
+    case "fl-ok": case "fl-bad": { const ok = a === "fl-ok"; grade(it, ok, R.cur.mode); skill("flash", ok); R.res.push({ id: it.id, ok }); if (!ok) R.wrong.add(it.id); touch(); R.pos++; R.flip = false; showFlash(); break; }
+    /* exam */
+    case "exam-sec": view = "examsec"; viewArg = el.dataset.s; EX = null; render(); examTimer(); break;
+    case "exam-task": { EX.task = +el.dataset.i; const t = (viewArg === "ee" ? C.exam.ee : C.exam.eo)[EX.task]; EX.secs = t.secs; EX.tick = false; EX.text = ""; EX.res = null; render(); break; }
+    case "ex-timer": EX.tick = !EX.tick; examTimer(); render(); break;
+    case "co-play": speakLines(EX.list[EX.pos].audio); break;
+    case "ex-pick": { const q = EX.list[EX.pos]; const i = +el.dataset.i; EX.ans[EX.pos] = { pick: i, ok: i === q.answer }; render(); break; }
+    case "ex-next": EX.pos++; render(); break;
+    case "ex-restart": EX = null; render(); break;
+    case "eo-mic": {
+      if (micState !== "idle") { micStop(); break; }
+      const base = EX.text ? EX.text.trim() + " " : "";
+      micStart((text, final, reason) => { const ta = $("#extext"); EX.text = base + text.trim(); if (ta) ta.value = EX.text; if (final && reason && !["stopped", "viewer_stopped"].includes(reason) && !text) toast("Microfone indisponível. Digite um resumo do que falou."); });
+      break;
+    }
+    case "ex-correct": {
+      if (!EX.text.trim()) return toast(viewArg === "ee" ? "Escreva seu texto primeiro." : "Grave ou digite sua resposta primeiro.");
+      const t = (viewArg === "ee" ? C.exam.ee : C.exam.eo)[EX.task];
+      EX.busy = true; render();
+      correctWriting(EX.text, `${t.exam} — ${t.task} (${viewArg === "ee" ? "expressão escrita" : "expressão oral; o texto é a transcrição automática da fala, ignore pontuação e pequenas falhas de transcrição"}). ${t.prompt} ${t.words ? "Extensão pedida: " + t.words + "." : ""} Avalie segundo os critérios oficiais (adequação à tarefa, coerência, vocabulário, gramática).`, { level: "intermediário, preparando-se para o " + t.exam, examFields: ', "nclc_estimado": "NCLC estimado (ex.: 6)", "nota_exame": "nota estimada na escala do exame (TCF 0–20 ou TEF 0–699)"' })
+        .then(r => { EX.res = r; if (r.nclc_estimado || r.nota_exame) r.resumo = `${r.nota_exame ? "Nota estimada: " + r.nota_exame + ". " : ""}${r.nclc_estimado ? "NCLC estimado: " + r.nclc_estimado + ". " : ""}${r.resumo || ""}`; P.exam.hist.push({ id: Date.now().toString(36), sec: viewArg, title: t.exam + " " + t.task, pct: Math.round((+r.nota || 0) * 10), ts: Date.now() }); touch(); })
+        .catch(e => { EX.res = { error: aiErr(e) }; })
+        .finally(() => { EX.busy = false; if (view === "examsec") render(); });
+      break;
+    }
+  }
+});
+document.addEventListener("input", ev => {
+  const el = ev.target; const k = el.dataset.actInput;
+  if (k === "wtext") { writeState.text = el.value; const l = el.parentElement.querySelector("label .num"); if (l) l.textContent = `(${(el.value.trim().match(/\S+/g) || []).length} palavras)`; }
+  if (k === "extext" && EX) { EX.text = el.value; const l = el.parentElement.querySelector("label .num"); if (l) l.textContent = `(${(el.value.trim().match(/\S+/g) || []).length} palavras)`; }
+});
+document.addEventListener("change", ev => {
+  const el = ev.target; const k = el.dataset.actChange; if (!k) return;
+  if (k === "voice") { P.set.voice = el.value; touch(); speak(C.voiceSample, { force: true }); }
+  if (k === "audio") { P.set.audio = el.checked; touch(); }
+  if (k === "speakset") { P.set.speak = el.checked; touch(); }
+  if (k === "wprompt") { writeState.prompt = writePrompts()[+el.value]; writeState.res = null; render(); }
+});
+document.addEventListener("keydown", ev => {
+  if (!R || $("#run").hidden) return;
+  if (ev.key === "Enter") {
+    ev.preventDefault();
+    if (R.ans || (R.cur && R.cur.ex === "intro")) { $("[data-act=next]")?.click(); }
+    else if (R.kind !== "flash") doCheck();
+  } else if (R.kind === "flash" && ev.key === " ") { ev.preventDefault(); if (!R.flip) $("[data-act=flip]")?.click(); }
+  else if (!R.ans && R.cur && ["mc", "listen"].includes(R.cur.ex) && /^[1-4]$/.test(ev.key) && document.activeElement?.tagName !== "INPUT") { document.querySelectorAll(".opt")[+ev.key - 1]?.click(); }
+});
+
+/* ---------- boot ---------- */
+if (S.last && S.profiles[S.last]) setProfile(S.last); else if (S.order.length) setProfile(S.order[0]); else updateChip();
+render();
+setSync("init");
+initCloud();
+window.addEventListener("focus", () => { if (dirty.size) flush(); });
+})();
+
+</script>
+
+</body></html>
